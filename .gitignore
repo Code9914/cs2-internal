@@ -12,7 +12,6 @@ x64/
 # Binaries / tools (not part of source)
 cs2-dumper.exe
 injector.exe
-build_injector.bat
 main.obj
 
 # External MinHook (top-level, kiero has its own copy)

@@ -19,6 +19,7 @@ using CreateInterfaceFn = void* (__stdcall*)(const char* name, int* returnCode);
 namespace settings {
     // --- ESP ---
     inline bool   espEnabled     = true;
+    inline bool   espTeamCheck   = true;
     inline bool   box            = true;
     inline bool   boxFilled      = false;
     inline bool   boxCorner      = false;
@@ -34,9 +35,6 @@ namespace settings {
 
     inline bool   distance       = false;
     inline float  distColor[4]  = { 1.f, 1.f, 1.f, 1.f };
-
-    // --- Aimbot (UI placeholder) ---
-    inline bool   silentAim     = false;
 
     // --- Misc ---
     inline bool   watermark     = true;

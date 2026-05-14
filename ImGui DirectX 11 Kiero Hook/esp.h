@@ -22,6 +22,7 @@ inline void DrawESP() {
 
     for (int i = 0; i <= 64; i++) {
         if (!players[i].valid) continue;
+        if (settings::espTeamCheck && players[i].team == GetLocalTeam()) continue;
 
         Vector3 foot = players[i].pos;
         Vector3 head = foot + Vector3(0, 0, 72);
