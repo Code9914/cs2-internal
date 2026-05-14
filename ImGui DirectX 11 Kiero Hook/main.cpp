@@ -493,9 +493,6 @@ DWORD WINAPI MainThread(LPVOID lpReserved)
 {
     g_hModule = (HMODULE)lpReserved;
 
-    AllocConsole();
-    FILE* f; freopen_s(&f, "CONOUT$", "w", stdout);
-
     InitProtection();
 
     HMODULE client = nullptr;
@@ -505,8 +502,6 @@ DWORD WINAPI MainThread(LPVOID lpReserved)
     }
 
     InitRuntime();
-
-    ShowWindow(GetConsoleWindow(), SW_SHOW);
 
     bool init_hook = false;
     do
