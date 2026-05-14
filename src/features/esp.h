@@ -1,7 +1,7 @@
 #pragma once
-#include "includes.h"
-#include "vector.h"
-#include "entity.h"
+#include "../core/includes.h"
+#include "../core/vector.h"
+#include "../core/entity.h"
 
 inline ViewMatrix g_ViewMatrix;
 

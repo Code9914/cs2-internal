@@ -1,9 +1,9 @@
 #pragma once
-#include "includes.h"
-#include "vector.h"
-#include "entity.h"
+#include "../core/includes.h"
+#include "../core/vector.h"
+#include "../core/entity.h"
 #include "aimbot.h"
-#include "kiero/minhook/include/MinHook.h"
+#include "../libs/kiero/minhook/include/MinHook.h"
 
 using CreateMoveFn = void(__fastcall*)(__int64 a1, __int64 a2);
 inline CreateMoveFn oCreateMove = nullptr;

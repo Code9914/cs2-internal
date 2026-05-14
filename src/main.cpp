@@ -1,10 +1,10 @@
-#include "includes.h"
-#include "vector.h"
-#include "entity.h"
-#include "esp.h"
-#include "cs2_runtime.h"
-#include "aimbot.h"
-#include "createmove.h"
+#include "core/includes.h"
+#include "core/vector.h"
+#include "core/entity.h"
+#include "features/esp.h"
+#include "core/cs2_runtime.h"
+#include "features/aimbot.h"
+#include "features/createmove.h"
 
 
 
