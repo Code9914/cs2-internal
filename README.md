@@ -1,4 +1,4 @@
-# CS2 Internal
+# CockEngine
 
 Cheat interne pour Counter-Strike 2 avec un aimbot basé sur CreateMove et un overlay ESP.
 
