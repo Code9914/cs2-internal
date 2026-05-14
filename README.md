@@ -80,7 +80,3 @@ ImGui DirectX 11 Kiero Hook/
 ├── imgui/                # Dear ImGui (v1.90)
 └── kiero/                # Kiero D3D hook + MinHook
 ```
-
-## Avertissement
-
-Ce projet est à des fins éducatives uniquement. Utilisez à vos propres risques.
