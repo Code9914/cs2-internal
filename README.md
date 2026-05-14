@@ -81,16 +81,6 @@ ImGui DirectX 11 Kiero Hook/
 └── kiero/                # Kiero D3D hook + MinHook
 ```
 
-## Détails Techniques
-
-- **Méthode de hook** : MinHook sur `client.dll + 0x85ddb0` (CreateMove)
-- **Rendu** : Kiero D3D11 Present hook + ImGui
-- **Matrice osseuse** : `pawn + 0x1D80` (stride 0x20, XYZ à [0..2])
-- **Head bone** : index 0
-- **Neck bone** : index 1
-- **Chest bone** : index 4
-- **Position des yeux** : `sceneNode.m_vecAbsOrigin + pawn.m_vecViewOffset.z` (offset 0xE70 + 0x20)
-
 ## Avertissement
 
 Ce projet est à des fins éducatives uniquement. Utilisez à vos propres risques.
