@@ -1,0 +1,39 @@
+#pragma once
+#include <cstdio>
+#include <cstdint>
+
+// RVA from cs2-dumper (runtime pointers in client.dll)
+#define RVA_ENTITYLIST     0x24D0DC0
+#define RVA_LOCALPAWN      0x2056700
+#define RVA_VIEWANGLES     0x2340288
+#define RVA_VIEWMATRIX     0x2330AE0
+
+// All values resolved at runtime via:
+//   - CreateInterface (interfaces)
+//   - SchemaSystem (class field offsets)
+//   - Pattern scanning (globals)
+
+struct GameOffsets {
+    // Entity system
+    uintptr_t entityList            = 0;
+    uintptr_t localPlayerPawn       = 0;
+    uintptr_t gameEntitySystem      = 0;
+
+    // View
+    uintptr_t viewMatrix            = 0;
+    uintptr_t viewAngles            = 0;
+
+    // Schema offsets (resolved by SchemaSystem at runtime)
+    int32_t m_pGameSceneNode        = 0x330;
+    int32_t m_iHealth               = 0x34C;
+    int32_t m_iTeamNum              = 0x3EB;
+    int32_t m_hPlayerPawn           = 0x90C;
+    int32_t m_sSanitizedPlayerName  = 0x860;
+    int32_t m_vecAbsOrigin          = 0xC8;
+    int32_t m_fFlags                = 0x3F8;
+    int32_t m_vecViewOffset         = 0xE70;
+    int32_t m_modelState            = 0x1D0;
+    int32_t m_pBoneArray            = 0x80;
+};
+
+inline GameOffsets g_Offsets;
