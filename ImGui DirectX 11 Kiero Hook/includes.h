@@ -36,6 +36,12 @@ namespace settings {
     inline bool   distance       = false;
     inline float  distColor[4]  = { 1.f, 1.f, 1.f, 1.f };
 
+    // --- Visual ---
+    inline bool   noFlash        = false;
+    inline bool   fovChanger     = false;
+    inline float  fovValue       = 90.f;
+    inline bool   noFog          = false;
+
     // --- Misc ---
     inline bool   watermark     = true;
 }

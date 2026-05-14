@@ -28,21 +28,26 @@ void LoadConfig() {
     if (fopen_s(&f, g_ConfigPath, "rb") || !f) return;
 
     int b = 1, bf = 0, bc = 0, hp = 1, nm = 1, dist = 0, esp = 1, et = 1, wm = 1;
-    int ae = 0, tc = 1, af = 0, sf = 0;
-    float bt = 2.f, fov = 8.f, sm = 6.f;
+    int ae = 0, tc = 1, sf = 0, te = 0, tk = 0, se = 0;
+    int ak = VK_LBUTTON, tk2 = VK_MENU, ah = 0, nf = 0, fc = 0, nfg = 0;
+    float bt = 2.f, fov = 8.f, sm = 6.f, fv = 90.f;
     float bcol[4]={1,0.55f,0,1}, bfill[4]={0,0,0,0.3f};
     float hcol[4]={0,1,0,1}, ncol[4]={1,1,1,1}, dcol[4]={1,1,1,1};
 
     fscanf_s(f, "%d %d %d %d %d %d %d %d %d"
         " %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f"
-        " %d %d %d %d %f %f",
+        " %d %d %d %d %d %f %f %d"
+        " %d %d %d %f"
+        " %d %d %d",
         &b, &bf, &bc, &hp, &nm, &dist, &esp, &et, &wm,
         &bt, &bcol[0], &bcol[1], &bcol[2], &bcol[3],
         &bfill[0], &bfill[1], &bfill[2], &bfill[3],
         &hcol[0], &hcol[1], &hcol[2], &hcol[3],
         &ncol[0], &ncol[1], &ncol[2], &ncol[3],
         &dcol[0], &dcol[1], &dcol[2], &dcol[3],
-        &ae, &tc, &af, &sf, &fov, &sm);
+        &ae, &tc, &sf, &te, &tk, &fov, &sm, &se,
+        &ak, &tk2, &ah, &fv,
+        &nf, &fc, &nfg);
     fclose(f);
 
     settings::box = b!=0; settings::boxFilled = bf!=0; settings::boxCorner = bc!=0;
@@ -51,8 +56,12 @@ void LoadConfig() {
     settings::espTeamCheck = et!=0;
     settings::watermark = wm!=0;
     settings::aimbotEnabled = ae!=0; settings::aimbotTeamCheck = tc!=0;
-    settings::aimbotAutoFire = af!=0; settings::aimbotShowFov = sf!=0;
-    settings::aimbotFov = fov; settings::aimbotSmooth = sm;
+    settings::aimbotShowFov = sf!=0;
+    settings::triggerbotEnabled = te!=0; settings::triggerbotTeamCheck = tk!=0;
+    settings::aimbotFov = fov; settings::aimbotSmooth = sm; settings::aimbotSmoothEnabled = se!=0;
+    settings::aimbotKey = ak; settings::triggerbotKey = tk2;
+    settings::aimbotHitbox = ah; settings::fovValue = fv;
+    settings::noFlash = nf!=0; settings::fovChanger = fc!=0; settings::noFog = nfg!=0;
     settings::boxThickness = bt; memcpy(settings::boxColor, bcol, 16);
     memcpy(settings::boxFilledColor, bfill, 16); memcpy(settings::healthColor, hcol, 16);
     memcpy(settings::nameColor, ncol, 16); memcpy(settings::distColor, dcol, 16);
@@ -64,7 +73,9 @@ void SaveConfig() {
 
     fprintf_s(f, "%d %d %d %d %d %d %d %d %d"
         " %.1f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f"
-        " %d %d %d %d %.1f %.1f",
+        " %d %d %d %d %d"
+        " %f %f %d %d %d %d %.1f"
+        " %d %d %d",
         settings::box, settings::boxFilled, settings::boxCorner,
         settings::health, settings::name, settings::distance, settings::espEnabled,
         settings::espTeamCheck,
@@ -75,8 +86,12 @@ void SaveConfig() {
         settings::healthColor[0], settings::healthColor[1], settings::healthColor[2], settings::healthColor[3],
         settings::nameColor[0], settings::nameColor[1], settings::nameColor[2], settings::nameColor[3],
         settings::distColor[0], settings::distColor[1], settings::distColor[2], settings::distColor[3],
-        settings::aimbotEnabled, settings::aimbotTeamCheck, settings::aimbotAutoFire,
-        settings::aimbotShowFov, settings::aimbotFov, settings::aimbotSmooth);
+        settings::aimbotEnabled, settings::aimbotTeamCheck, settings::aimbotShowFov,
+        settings::triggerbotEnabled, settings::triggerbotTeamCheck,
+        settings::aimbotFov, settings::aimbotSmooth, settings::aimbotSmoothEnabled,
+        settings::aimbotKey, settings::triggerbotKey, settings::aimbotHitbox,
+        settings::fovValue,
+        settings::noFlash, settings::fovChanger, settings::noFog);
     fclose(f);
 }
 
@@ -289,53 +304,90 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
     }
 
     if (menuOpen) {
-        ImGui::SetNextWindowSizeConstraints(ImVec2(420, 350), ImVec2(800, 600));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(550, 420), ImVec2(800, 600));
         ImGui::Begin("CockEngine", &menuOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
 
         if (ImGui::BeginTabBar("Tabs")) {
 
             // === Aimbot ===
             if (ImGui::BeginTabItem("Aimbot")) {
-                ImGui::Checkbox("Enable Aimbot", &settings::aimbotEnabled);
-                ImGui::SameLine();
-                ImGui::Checkbox("Auto-fire", &settings::aimbotAutoFire);
+                if (ImGui::BeginChild("##aimbot_left", ImVec2(ImGui::GetWindowWidth() / 2 - 20, 0), true)) {
+                    ImGui::TextColored(ImVec4(1,0.55f,0,1), "Aimbot");
+                    ImGui::Separator();
 
-                ImGui::Separator();
-                ImGui::Combo("Hitbox", &settings::aimbotHitbox, "Head\0Neck\0Chest\0");
-                ImGui::Separator();
+                    ImGui::Checkbox("Enable", &settings::aimbotEnabled);
+                    ImGui::Checkbox("Team check", &settings::aimbotTeamCheck);
+                    ImGui::Combo("Hitbox", &settings::aimbotHitbox, "Head\0Neck\0Chest\0");
 
-                if (settings::aimbotKeyWait) {
-                    ImGui::Text("Press a key...");
-                    for (int k = 1; k < 256; k++) {
-                        if ((GetAsyncKeyState(k) & 1) && k != VK_INSERT && k != VK_END) {
-                            settings::aimbotKey = k;
-                            settings::aimbotKeyWait = false;
-                            break;
+                    ImGui::Separator();
+                    ImGui::TextDisabled("-- Key --");
+                    if (settings::aimbotKeyWait) {
+                        ImGui::Text("Press a key...");
+                        for (int k = 1; k < 256; k++) {
+                            if ((GetAsyncKeyState(k) & 1) && k != VK_INSERT && k != VK_END) {
+                                settings::aimbotKey = k;
+                                settings::aimbotKeyWait = false;
+                                break;
+                            }
                         }
+                    } else {
+                        if (ImGui::Button("Bind key")) settings::aimbotKeyWait = true;
+                        ImGui::SameLine();
+                        ImGui::Text("Key: %s", AimbotKeyName(settings::aimbotKey));
                     }
-                } else {
-                    if (ImGui::Button("Bind key")) settings::aimbotKeyWait = true;
-                    ImGui::SameLine();
-                    ImGui::Text("Key: %s", AimbotKeyName(settings::aimbotKey));
-                }
 
-                ImGui::Checkbox("Show FOV", &settings::aimbotShowFov);
-                ImGui::SliderFloat("FOV", &settings::aimbotFov, 0.5f, 30.f, "%.1f");
-                ImGui::SliderFloat("Smooth", &settings::aimbotSmooth, 0.f, 30.f, "%.1f");
-                ImGui::Checkbox("Team check", &settings::aimbotTeamCheck);
+                    ImGui::Separator();
+                    ImGui::TextDisabled("-- FOV --");
+                    ImGui::Checkbox("Show circle", &settings::aimbotShowFov);
+                    if (settings::aimbotShowFov)
+                        ImGui::SliderFloat("Radius", &settings::aimbotFov, 0.5f, 30.f, "%.1f");
+
+                    ImGui::Separator();
+                    ImGui::TextDisabled("-- Smoothing --");
+                    ImGui::Checkbox("Smooth", &settings::aimbotSmoothEnabled);
+                    if (settings::aimbotSmoothEnabled)
+                        ImGui::SliderFloat("Value", &settings::aimbotSmooth, 0.f, 30.f, "%.1f");
+                }
+                ImGui::EndChild();
+
+                ImGui::SameLine();
+
+                if (ImGui::BeginChild("##triggerbot_right", ImVec2(ImGui::GetWindowWidth() / 2 - 20, 0), true)) {
+                    ImGui::TextColored(ImVec4(1,0.55f,0,1), "Triggerbot");
+                    ImGui::Separator();
+
+                    ImGui::Checkbox("Enable", &settings::triggerbotEnabled);
+                    ImGui::Checkbox("Team check", &settings::triggerbotTeamCheck);
+
+                    ImGui::Separator();
+                    ImGui::TextDisabled("-- Key --");
+                    if (settings::triggerbotKeyWait) {
+                        ImGui::Text("Press a key...");
+                        for (int k = 1; k < 256; k++) {
+                            if ((GetAsyncKeyState(k) & 1) && k != VK_INSERT && k != VK_END) {
+                                settings::triggerbotKey = k;
+                                settings::triggerbotKeyWait = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (ImGui::Button("Bind key")) settings::triggerbotKeyWait = true;
+                        ImGui::SameLine();
+                        ImGui::Text("Key: %s", AimbotKeyName(settings::triggerbotKey));
+                    }
+                }
+                ImGui::EndChild();
                 ImGui::EndTabItem();
             }
 
             // === ESP ===
             if (ImGui::BeginTabItem("ESP")) {
-                ImGui::Spacing();
-
                 ImGui::Checkbox("Enable ESP", &settings::espEnabled);
                 ImGui::SameLine();
                 ImGui::Checkbox("Team check", &settings::espTeamCheck);
-
                 ImGui::Separator();
-        ImGui::TextDisabled("-- Box --");
+
+                ImGui::TextDisabled("-- Box --");
                 ImGui::Checkbox("Box", &settings::box);
                 ImGui::SameLine();
                 ImGui::Checkbox("Corner", &settings::boxCorner);
@@ -349,25 +401,37 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
                     ImGui::ColorEdit4("Fill Color", settings::boxFilledColor, ImGuiColorEditFlags_NoInputs);
                 ImGui::Separator();
 
-                ImGui::Separator();
-        ImGui::TextDisabled("-- Health --");
+                ImGui::TextDisabled("-- Health --");
                 ImGui::Checkbox("Health bar", &settings::health);
                 if (settings::health)
                     ImGui::ColorEdit4("Health Color", settings::healthColor, ImGuiColorEditFlags_NoInputs);
                 ImGui::Separator();
 
-                ImGui::Separator();
-        ImGui::TextDisabled("-- Name --");
+                ImGui::TextDisabled("-- Name --");
                 ImGui::Checkbox("Name", &settings::name);
                 if (settings::name)
                     ImGui::ColorEdit4("Name Color", settings::nameColor, ImGuiColorEditFlags_NoInputs);
                 ImGui::Separator();
 
-                ImGui::Separator();
                 ImGui::TextDisabled("-- Distance --");
                 ImGui::Checkbox("Distance", &settings::distance);
                 if (settings::distance)
                     ImGui::ColorEdit4("Dist. Color", settings::distColor, ImGuiColorEditFlags_NoInputs);
+
+                ImGui::EndTabItem();
+            }
+
+            // === Visual ===
+            if (ImGui::BeginTabItem("Visual")) {
+                ImGui::Checkbox("No Flash", &settings::noFlash);
+                ImGui::Separator();
+
+                ImGui::Checkbox("FOV Changer", &settings::fovChanger);
+                if (settings::fovChanger)
+                    ImGui::SliderFloat("Value", &settings::fovValue, 60.f, 120.f, "%.0f");
+                ImGui::Separator();
+
+                ImGui::Checkbox("No Fog", &settings::noFog);
 
                 ImGui::EndTabItem();
             }
@@ -424,7 +488,65 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
         ImGui::End();
     }
 
+    __try { if (settings::aimbotShowFov) DrawFOV(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
     __try { if (settings::espEnabled) DrawESP(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
+
+    __try {
+        if (settings::triggerbotEnabled) {
+            uintptr_t localPawn = GetLocalPawn();
+            if (localPawn && localPawn > 0x100000) {
+                int idEntIndex = *(int*)(localPawn + 0x344C);
+                if (idEntIndex > 0 && idEntIndex < 64) {
+                    uintptr_t targetPawn = GetEntity(g_EntityList, idEntIndex);
+                    if (targetPawn && targetPawn > 0x100000) {
+                        uintptr_t targetCtrl = GetEntity(g_EntityList, *(uint32_t*)(targetPawn + g_Offsets.m_hPlayerPawn));
+                        if (targetCtrl && targetCtrl > 0x100000) {
+                            int targetTeam = *(uint8_t*)(targetCtrl + 0x840);
+                            int localTeam = GetLocalTeam();
+                            if (localTeam && targetTeam && (settings::triggerbotTeamCheck ? targetTeam != localTeam : true)) {
+                                if (settings::triggerbotKey == 0 || (GetAsyncKeyState(settings::triggerbotKey) & 0x8000)) {
+                                    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+                                    mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } __except(EXCEPTION_EXECUTE_HANDLER) {}
+
+    __try {
+        uintptr_t localPawn = GetLocalPawn();
+        if (localPawn && localPawn > 0x100000) {
+            if (settings::noFlash)
+                *(float*)(localPawn + 0x13FC) = 0.f;
+            else
+                *(float*)(localPawn + 0x13FC) = 255.f;
+        }
+
+        if (settings::fovChanger) {
+            for (int i = 1; i <= 64; i++) {
+                uintptr_t ctrl = GetEntity(g_EntityList, i);
+                if (!ctrl || ctrl < 0x100000) continue;
+                *(int*)(ctrl + 0x78C) = (int)settings::fovValue;
+            }
+        } else {
+            for (int i = 1; i <= 64; i++) {
+                uintptr_t ctrl = GetEntity(g_EntityList, i);
+                if (!ctrl || ctrl < 0x100000) continue;
+                *(int*)(ctrl + 0x78C) = 90;
+            }
+        }
+
+        if (settings::noFog) {
+            for (int i = 1; i <= 512; i++) {
+                uintptr_t ent = GetEntity(g_EntityList, i);
+                if (!ent || ent < 0x100000) continue;
+                __try { *(float*)(ent + 0x628) = 0.f; } __except(EXCEPTION_EXECUTE_HANDLER) {}
+            }
+        }
+    } __except(EXCEPTION_EXECUTE_HANDLER) {}
 
     if (settings::watermark && !menuOpen) {
         auto* list = ImGui::GetBackgroundDrawList();

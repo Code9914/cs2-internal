@@ -51,7 +51,9 @@ inline void __fastcall hkCreateMove(__int64 a1, __int64 a2) {
         if (!players[i].valid) continue;
         if (settings::aimbotTeamCheck && players[i].team == localTeam) continue;
 
-        Vector3 aimPos = GetBonePos(players[i].pawn, 0);
+        int boneIndices[] = { 0, 1, 4 };
+        int boneIdx = boneIndices[settings::aimbotHitbox];
+        Vector3 aimPos = GetBonePos(players[i].pawn, boneIdx);
         if (aimPos.x == 0.f && aimPos.y == 0.f && aimPos.z == 0.f) continue;
 
         Vector3 angle = CalcAngle(localPos, aimPos);
@@ -71,7 +73,7 @@ inline void __fastcall hkCreateMove(__int64 a1, __int64 a2) {
     }
 
     if (found) {
-        if (settings::aimbotSmooth > 1.f) {
+        if (settings::aimbotSmoothEnabled && settings::aimbotSmooth > 1.f) {
             float curPitch = *(float*)(g_Offsets.viewAngles + 0x0);
             float curYaw   = *(float*)(g_Offsets.viewAngles + 0x4);
 
