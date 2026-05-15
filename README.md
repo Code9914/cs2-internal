@@ -64,18 +64,21 @@ build_injector.bat
 ## Structure du Projet
 
 ```
-ImGui DirectX 11 Kiero Hook/
+src/
 ├── main.cpp              # Point d'entrée, hook Present D3D11, ImGui
-├── createmove.h          # Hook CreateMove + logique aimbot
-├── entity.h              # Lecture entités, os, équipes
-├── esp.h                 # Rendu ESP (boîtes, vie, noms)
-├── aimbot.h              # Paramètres aimbot & touches
-├── vector.h              # Vector3, ViewMatrix, WorldToScreen
-├── game_offsets.h        # Offsets schema & variables globales
-├── cs2_runtime.h         # Init SchemaSystem & résolution offsets
-├── schema_system.h       # Interface vtable SchemaSystem
-├── pattern_scan.h        # Moteur de signature scanning
-├── includes.h            # Headers communs & namespace settings
-├── imgui/                # Dear ImGui (v1.90)
-└── kiero/                # Kiero D3D hook + MinHook
+├── core/
+│   ├── includes.h        # Headers communs & namespace settings
+│   ├── vector.h          # Vector3, ViewMatrix, WorldToScreen
+│   ├── entity.h          # Lecture entités, os, équipes
+│   ├── game_offsets.h    # Offsets schema & variables globales
+│   ├── cs2_runtime.h     # Init SchemaSystem & résolution offsets
+│   ├── schema_system.h   # Interface vtable SchemaSystem
+│   └── pattern_scan.h    # Moteur de signature scanning
+├── features/
+│   ├── aimbot.h          # Paramètres aimbot & touches
+│   ├── createmove.h      # Hook CreateMove + logique aimbot
+│   └── esp.h             # Rendu ESP (boîtes, vie, noms)
+└── libs/
+    ├── imgui/            # Dear ImGui (v1.90)
+    └── kiero/            # Kiero D3D hook + MinHook
 ```
