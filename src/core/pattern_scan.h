@@ -55,7 +55,21 @@ public:
         size_t imageSize = nt->OptionalHeader.SizeOfImage;
 
         __try {
-            return FindInRange(sig, base, imageSize);
+            uintptr_t result = FindInRange(sig, base, imageSize);
+            if (result) {
+                // Count total matches for debugging
+                int count = 0;
+                uintptr_t scan = result + 1;
+                while (scan < base + imageSize) {
+                    uintptr_t next = FindInRange(sig, scan, base + imageSize - scan);
+                    if (!next) break;
+                    count++;
+                    scan = next + 1;
+                    if (count > 10) break;
+                }
+                if (count > 0) printf("[PS] Found %d matches, using first at 0x%llX\n", count + 1, result);
+            }
+            return result;
         } __except(EXCEPTION_EXECUTE_HANDLER) {
             return 0;
         }

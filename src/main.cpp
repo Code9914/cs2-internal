@@ -23,6 +23,8 @@ bool menuOpen = false;
 bool g_UnloadRequested = false;
 HMODULE g_hModule = nullptr;
 
+CheatStatus g_Status;
+
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
         return true;
@@ -46,6 +48,7 @@ void InitImGui() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+    io.IniFilename = nullptr;
     ApplyStyle();
     ImGui_ImplWin32_Init(window);
     ImGui_ImplDX11_Init(pDevice, pContext);
@@ -78,7 +81,6 @@ DWORD WINAPI CleanupThread(LPVOID) {
     }
 
     kiero::shutdown();
-    FreeConsole();
     FreeLibraryAndExitThread(g_hModule, 0);
     return 0;
 }
@@ -229,18 +231,30 @@ DWORD WINAPI MainThread(LPVOID lpParam) {
         Sleep(50);
     }
 
+    g_Status.clientBase = (uintptr_t)client;
+    sprintf_s(g_Status.clientDll, "0x%llX", (uintptr_t)client);
+
     InitRuntime();
+
+    g_Status.entityList = g_Offsets.entityList;
+    g_Status.viewAngles = g_Offsets.viewAngles;
+    g_Status.viewMatrix = g_Offsets.viewMatrix;
 
     bool init_hook = false;
     do {
         if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
             kiero::bind(8, (void**)&oPresent, hkPresent);
+            g_Status.presentHooked = true;
             init_hook = true;
         }
     } while (!init_hook);
 
-    InitCreateMoveHook();
+    if (InitCreateMoveHook(&g_Status.createMoveAddr)) {
+        g_Status.createMoveHooked = true;
+        sprintf_s(g_Status.cmRva, "0x%llX", g_Status.createMoveAddr - (uintptr_t)client);
+    }
 
+    g_Status.initialized = true;
     return TRUE;
 }
 

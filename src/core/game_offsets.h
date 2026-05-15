@@ -3,10 +3,11 @@
 #include <cstdint>
 
 // RVA from cs2-dumper (runtime pointers in client.dll)
-#define RVA_ENTITYLIST     0x24D0DC0
-#define RVA_LOCALPAWN      0x2056700
-#define RVA_VIEWANGLES     0x2340288
-#define RVA_VIEWMATRIX     0x2330AE0
+// Updated: 2026-05-15
+#define RVA_ENTITYLIST     0x24D4E80
+#define RVA_LOCALPAWN      0x205A700
+#define RVA_VIEWANGLES     0x23444F8
+#define RVA_VIEWMATRIX     0x2334850
 
 // All values resolved at runtime via:
 //   - CreateInterface (interfaces)

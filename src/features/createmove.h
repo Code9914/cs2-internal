@@ -2,10 +2,11 @@
 #include "../core/includes.h"
 #include "../core/vector.h"
 #include "../core/entity.h"
+#include "../core/pattern_scan.h"
 #include "aimbot.h"
 #include "../libs/kiero/minhook/include/MinHook.h"
 
-using CreateMoveFn = void(__fastcall*)(__int64 a1, __int64 a2);
+using CreateMoveFn = __int64(__fastcall*)(DWORD* a1, __int64 a2, char a3, double a4, int a5, __int64 a6);
 inline CreateMoveFn oCreateMove = nullptr;
 
 inline float NormalizeAngle(float angle) {
@@ -24,32 +25,34 @@ inline Vector3 CalcAngle(const Vector3& src, const Vector3& dst) {
     return Vector3(pitch, yaw, 0.f);
 }
 
-inline void __fastcall hkCreateMove(__int64 a1, __int64 a2) {
-    oCreateMove(a1, a2);
+inline __int64 __fastcall hkCreateMove(DWORD* a1, __int64 a2, char a3, double a4, int a5, __int64 a6) {
+    __int64 result = oCreateMove(a1, a2, a3, a4, a5, a6);
 
-    if (!settings::aimbotEnabled) return;
+    if (!settings::aimbotEnabled) return result;
 
     if (settings::aimbotKey != 0 && !(GetAsyncKeyState(settings::aimbotKey) & 0x8000))
-        return;
+        return result;
 
     uintptr_t localPawn = GetLocalPawn();
-    if (!localPawn) return;
+    if (!localPawn) return result;
 
     int localTeam = GetLocalTeam();
-    if (!localTeam) return;
+    if (!localTeam) return result;
 
     uintptr_t sceneNode = *(uintptr_t*)(localPawn + g_Offsets.m_pGameSceneNode);
-    if (!sceneNode) return;
+    if (!sceneNode) return result;
     Vector3 localPos = *(Vector3*)(sceneNode + g_Offsets.m_vecAbsOrigin);
     localPos.z += *(float*)(localPawn + g_Offsets.m_vecViewOffset + 0x20);
 
     float bestFov = settings::aimbotFov;
     Vector3 bestAngle;
     bool found = false;
+    int validCount = 0;
 
     for (int i = 1; i <= 64; i++) {
         if (!players[i].valid) continue;
         if (settings::aimbotTeamCheck && players[i].team == localTeam) continue;
+        validCount++;
 
         int boneIndices[] = { 0, 1, 4 };
         int boneIdx = boneIndices[settings::aimbotHitbox];
@@ -90,38 +93,32 @@ inline void __fastcall hkCreateMove(__int64 a1, __int64 a2) {
             *(float*)(g_Offsets.viewAngles + 0x4) = bestAngle.y;
         }
     }
+
+    return result;
 }
 
-inline bool InitCreateMoveHook() {
+inline bool InitCreateMoveHook(uintptr_t* outAddr = nullptr) {
     HMODULE client = GetModuleHandleA("client.dll");
-    if (!client) {
-        printf("[CreateMove] FAIL: client.dll not found\n");
-        return false;
-    }
+    if (!client) return false;
 
     uintptr_t base = (uintptr_t)client;
-    uintptr_t funcAbs = base + 0x85ddb0;
 
-    printf("[CreateMove] base=0x%llX | funcAbs=0x%llX | viewAngles=0x%llX\n", base, funcAbs, g_Offsets.viewAngles);
+    // CreateMove prologue: mov [rsp+?], rbx; push rbp; push rdi; push r14; lea rbp, [rsp-?]; sub rsp, ?; mov eax, [rcx]; mov rdi, rcx
+    const char* pattern = "48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9";
+    auto sig = Signature::FromString(pattern);
+    uintptr_t addr = PatternScan::Find(sig, client);
 
-    __try {
-        MH_STATUS status = MH_CreateHook((LPVOID)funcAbs, hkCreateMove, (LPVOID*)&oCreateMove);
-        if (status != MH_OK) {
-            printf("[CreateMove] MH_CreateHook failed: %d\n", status);
-            return false;
-        }
-
-        status = MH_EnableHook((LPVOID)funcAbs);
-        if (status != MH_OK) {
-            printf("[CreateMove] MH_EnableHook failed: %d\n", status);
-            return false;
-        }
-
-        printf("[CreateMove] Hook installed (orig=0x%llX)\n", (uintptr_t)oCreateMove);
-        return true;
+    if (!addr) {
+        addr = base + 0xC57F70;
     }
-    __except (EXCEPTION_EXECUTE_HANDLER) {
-        printf("[CreateMove] FAIL: exception\n");
-        return false;
-    }
+
+    if (outAddr) *outAddr = addr;
+
+    MH_STATUS status = MH_CreateHook((LPVOID)addr, hkCreateMove, (LPVOID*)&oCreateMove);
+    if (status != MH_OK) return false;
+
+    status = MH_EnableHook((LPVOID)addr);
+    if (status != MH_OK) return false;
+
+    return true;
 }
