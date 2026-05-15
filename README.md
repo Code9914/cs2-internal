@@ -65,9 +65,11 @@ build_injector.bat
 
 ```
 src/
-├── main.cpp              # Point d'entrée, hook Present D3D11, ImGui
+├── main.cpp              # Point d'entrée, hook Present, DllMain
 ├── core/
-│   ├── includes.h        # Headers communs & namespace settings
+│   ├── includes.h        # Headers communs
+│   ├── settings.h        # Tous les settings consolidés
+│   ├── config.h          # Sauvegarde/chargement config
 │   ├── vector.h          # Vector3, ViewMatrix, WorldToScreen
 │   ├── entity.h          # Lecture entités, os, équipes
 │   ├── game_offsets.h    # Offsets schema & variables globales
@@ -75,9 +77,12 @@ src/
 │   ├── schema_system.h   # Interface vtable SchemaSystem
 │   └── pattern_scan.h    # Moteur de signature scanning
 ├── features/
-│   ├── aimbot.h          # Paramètres aimbot & touches
+│   ├── aimbot.h          # Paramètres aimbot, DrawFOV, KeyName
 │   ├── createmove.h      # Hook CreateMove + logique aimbot
-│   └── esp.h             # Rendu ESP (boîtes, vie, noms)
+│   ├── esp.h             # Rendu ESP (boîtes, vie, noms)
+│   ├── triggerbot.h      # Logique triggerbot
+│   ├── visuals.h         # NoFlash, FOV Changer, NoFog
+│   └── menu.h            # UI rendering, ApplyStyle, KeyBinder
 └── libs/
     ├── imgui/            # Dear ImGui (v1.90)
     └── kiero/            # Kiero D3D hook + MinHook
