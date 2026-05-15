@@ -63,15 +63,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\includes.h" />
-    <ClInclude Include="features\createmove.h" />
+    <ClInclude Include="core\settings.h" />
+    <ClInclude Include="core\config.h" />
     <ClInclude Include="core\vector.h" />
     <ClInclude Include="core\entity.h" />
-    <ClInclude Include="features\esp.h" />
-    <ClInclude Include="core\pattern_scan.h" />
-    <ClInclude Include="core\schema_system.h" />
     <ClInclude Include="core\game_offsets.h" />
     <ClInclude Include="core\cs2_runtime.h" />
+    <ClInclude Include="core\schema_system.h" />
+    <ClInclude Include="core\pattern_scan.h" />
     <ClInclude Include="features\aimbot.h" />
+    <ClInclude Include="features\createmove.h" />
+    <ClInclude Include="features\esp.h" />
+    <ClInclude Include="features\triggerbot.h" />
+    <ClInclude Include="features\visuals.h" />
+    <ClInclude Include="features\menu.h" />
     <ClInclude Include="libs\imgui\imconfig.h" />
     <ClInclude Include="libs\imgui\imgui.h" />
     <ClInclude Include="libs\imgui\imgui_impl_dx11.h" />

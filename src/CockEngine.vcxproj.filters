@@ -57,6 +57,8 @@
     <ClInclude Include="libs\imgui\imstb_textedit.h"><Filter>libs\imgui</Filter></ClInclude>
     <ClInclude Include="libs\imgui\imstb_truetype.h"><Filter>libs\imgui</Filter></ClInclude>
     <ClInclude Include="core\includes.h"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="core\settings.h"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="core\config.h"><Filter>core</Filter></ClInclude>
     <ClInclude Include="core\vector.h"><Filter>core</Filter></ClInclude>
     <ClInclude Include="core\entity.h"><Filter>core</Filter></ClInclude>
     <ClInclude Include="core\game_offsets.h"><Filter>core</Filter></ClInclude>
@@ -66,5 +68,8 @@
     <ClInclude Include="features\aimbot.h"><Filter>features</Filter></ClInclude>
     <ClInclude Include="features\createmove.h"><Filter>features</Filter></ClInclude>
     <ClInclude Include="features\esp.h"><Filter>features</Filter></ClInclude>
+    <ClInclude Include="features\triggerbot.h"><Filter>features</Filter></ClInclude>
+    <ClInclude Include="features\visuals.h"><Filter>features</Filter></ClInclude>
+    <ClInclude Include="features\menu.h"><Filter>features</Filter></ClInclude>
   </ItemGroup>
 </Project>
