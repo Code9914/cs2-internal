@@ -6,7 +6,6 @@ Cheat interne pour Counter-Strike 2 avec un aimbot basé sur CreateMove et un ov
 
 ### Aimbot
 - **Visée sur les os** — lit la matrice osseuse directement depuis `CSkeletonInstance` pour un ciblage précis
-- **Hook CreateMove** — hook `sub_85DDB0` via MinHook pour une injection fiable des angles
 - **Smooth configurable** — activable/désactivable avec valeur ajustable
 - **Limite FOV** — ne cible que dans le champ de vision défini
 - **Cercle FOV** — affichage optionnel du rayon de visée à l'écran
