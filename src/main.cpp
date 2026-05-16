@@ -101,7 +101,7 @@ void RenderWatermark() {
     static float ping = 0.f;
 
     __try {
-        HMODULE engine = GetModuleHandleA("engine2.dll");
+        HMODULE engine = GetModuleHandleA(X("engine2.dll"));
         if (engine) {
             uintptr_t netClient = *(uintptr_t*)((uintptr_t)engine + 0x9090C0);
             if (netClient && netClient > 0x100000)
@@ -212,7 +212,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 void InitProtection() {
     HWND gameWnd = nullptr;
     while (!gameWnd) {
-        gameWnd = FindWindowA("SDL_app", nullptr);
+        gameWnd = FindWindowA(X("SDL_app"), nullptr);
         Sleep(50);
     }
     SetWindowDisplayAffinity(gameWnd, WDA_EXCLUDEFROMCAPTURE);
@@ -225,7 +225,7 @@ DWORD WINAPI MainThread(LPVOID lpParam) {
 
     HMODULE client = nullptr;
     while (!client) {
-        client = GetModuleHandleA("client.dll");
+        client = GetModuleHandleA(X("client.dll"));
         Sleep(50);
     }
 

@@ -25,7 +25,7 @@ inline Vector3 GetBonePos(uintptr_t pawn, int boneId) {
 
 inline uintptr_t GetLocalPawn() {
     __try {
-        HMODULE client = GetModuleHandleA("client.dll");
+        HMODULE client = GetModuleHandleA(X("client.dll"));
         if (!client) return 0;
         uintptr_t pawn = *(uintptr_t*)((uintptr_t)client + RVA_LOCALPAWN);
         return (pawn > 0x100000) ? pawn : 0;

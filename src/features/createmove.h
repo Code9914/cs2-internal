@@ -14,7 +14,7 @@ inline CreateMoveFn oCreateMove = nullptr;
 #define BTN_RELEASE 0x0
 
 inline void ForceJump(bool pressed) {
-    HMODULE hClient = GetModuleHandleA("client.dll");
+    HMODULE hClient = GetModuleHandleA(X("client.dll"));
     if (!hClient) return;
 
     uintptr_t jumpAddr = (uintptr_t)hClient + g_Offsets.btn_jump;
@@ -131,7 +131,7 @@ inline __int64 __fastcall hkCreateMove(DWORD* a1, __int64 a2, char a3, double a4
 }
 
 inline bool InitCreateMoveHook(uintptr_t* outAddr = nullptr) {
-    HMODULE client = GetModuleHandleA("client.dll");
+    HMODULE client = GetModuleHandleA(X("client.dll"));
     if (!client) return false;
 
     uintptr_t base = (uintptr_t)client;
