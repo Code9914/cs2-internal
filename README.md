@@ -229,18 +229,6 @@ graph LR
 
 ---
 
-## 📝 TODO / Roadmap
-
-- [ ] Vérifier la stabilité après la prochaine update CS2
-- [ ] Ajouter le **Skin Changer**
-- [ ] Améliorer la logique de smoothing de l'aimbot
-- [ ] Ajouter plus d'os à la liste des hitbox
-- [ ] Ajouter le **Radar Hack**
-- [ ] Ajouter l'option **Glow ESP**
-- [ ] Ajouter la **Liste des Spectateurs**
-
----
-
 ## 🔧 Build & Injection
 
 ### Prérequis
@@ -297,35 +285,3 @@ src/
 injector/
 └── main.cpp              # Injecteur manual mapping (x64)
 ```
-
----
-
-## 🔬 Notes Techniques
-
-> **Manual Mapping** : L'injecteur mappe la DLL depuis un buffer local `localImage`, résout les imports via `LoadLibrary`/`GetProcAddress`, applique les relocalisations, appelle DllMain via shellcode x64.
-
-> **D3DCompile** : Chargé dynamiquement via `LoadLibrary("d3dcompiler_47.dll")` pour éviter l'échec de résolution d'imports avec le manual mapping.
-
-> **Crash Handler** : `SetUnhandledExceptionFilter` avec handler SEH minimal — aucune dépendance externe. Écrit `crash.log` à côté de la DLL avec type d'exception, adresse, registres et état des offsets.
-
-> **Bhop** : Écriture sur l'état du bouton global à `client.dll + 0x2053EA0`. `BTN_PRESS = 0x10001`, `BTN_RELEASE = 0x0`.
-
-> **Pattern Scanner** : Supporte la résolution RIP-relative, scanning basé RVA pour les pointeurs de données et instructions.
-
-> **Tous les prints debug supprimés** du build de production.
-
-> `io.IniFilename = nullptr` empêche le cache de taille de fenêtre ImGui.
-
----
-
-## ⚠️ Problèmes Connus
-
-- Surveiller après la prochaine update CS2 pour les ruptures de pattern
-- Les offsets de boutons globaux peuvent changer avec l'update animgraph2 (branche beta)
-- La résolution d'offsets schema (`ResolveSchemaOffset`) est actuellement désactivée — les offsets utilisent les valeurs par défaut hardcodées de `game_offsets.h`
-- Les settings `aimbotKeyWait` et `triggerbotKeyWait` existent mais ne sont pas implémentés dans la logique (UI uniquement)
-
----
-
-> [!WARNING]
-> Ce projet est à des fins **éducatives uniquement**. Utilisez à vos propres risques. Les auteurs ne sont pas responsables de bans ou conséquences.
