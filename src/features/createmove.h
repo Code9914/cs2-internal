@@ -9,6 +9,20 @@
 using CreateMoveFn = __int64(__fastcall*)(DWORD* a1, __int64 a2, char a3, double a4, int a5, __int64 a6);
 inline CreateMoveFn oCreateMove = nullptr;
 
+// Global button state values
+#define BTN_PRESS   0x10001  // bit 0 (pressed) + bit 16 (held)
+#define BTN_RELEASE 0x0
+
+inline void ForceJump(bool pressed) {
+    HMODULE hClient = GetModuleHandleA("client.dll");
+    if (!hClient) return;
+
+    uintptr_t jumpAddr = (uintptr_t)hClient + g_Offsets.btn_jump;
+    uint32_t* pBtn = (uint32_t*)jumpAddr;
+
+    *pBtn = pressed ? BTN_PRESS : BTN_RELEASE;
+}
+
 inline float NormalizeAngle(float angle) {
     while (angle > 180.f) angle -= 360.f;
     while (angle < -180.f) angle += 360.f;
@@ -26,6 +40,25 @@ inline Vector3 CalcAngle(const Vector3& src, const Vector3& dst) {
 }
 
 inline __int64 __fastcall hkCreateMove(DWORD* a1, __int64 a2, char a3, double a4, int a5, __int64 a6) {
+    // === Bhop ===
+    static bool bhopReady = true;
+    if (settings::bhop) {
+        uintptr_t localPawn = GetLocalPawn();
+        if (localPawn) {
+            int flags = *(int*)(localPawn + g_Offsets.m_fFlags);
+            bool onGround = (flags & 1) != 0;
+            bool spaceHeld = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
+
+            if (!onGround) {
+                ForceJump(false);
+                bhopReady = true;
+            } else if (spaceHeld && bhopReady) {
+                ForceJump(true);
+                bhopReady = false;
+            }
+        }
+    }
+
     __int64 result = oCreateMove(a1, a2, a3, a4, a5, a6);
 
     if (!settings::aimbotEnabled) return result;

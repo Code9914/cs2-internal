@@ -35,6 +35,21 @@ struct GameOffsets {
     int32_t m_vecViewOffset         = 0xE70;
     int32_t m_modelState            = 0x1D0;
     int32_t m_pBoneArray            = 0x80;
+    
+    // Movement
+    int32_t m_pMovementServices     = 0x1220;
+    int32_t m_nButtons              = 0x50; // Relative to m_pMovementServices
+    int32_t m_nQueuedButtonDownMask = 0x70; // Relative to m_pMovementServices
+    int32_t m_nQueuedButtonChangeMask = 0x78; // Relative to m_pMovementServices
+
+    // Global button offsets (relative to client.dll base)
+    int32_t btn_jump                = 0x2053EA0;
+    int32_t btn_forward             = 0x2053BD0;
+    int32_t btn_back                = 0x2053C60;
+    int32_t btn_left                = 0x2053CF0;
+    int32_t btn_right               = 0x2053D80;
+    int32_t btn_duck                = 0x2053F30;
+    int32_t btn_sprint              = 0x2053870;
 };
 
 inline GameOffsets g_Offsets;

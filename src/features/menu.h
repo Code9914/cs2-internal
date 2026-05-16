@@ -298,6 +298,7 @@ inline void RenderMenu(bool& menuOpen) {
             ImGui::BeginChild("##misc_left", ImVec2(colW, childH), true);
             SectionHeader("Bhop");
 
+            RenderSwitch("Enabled", &settings::bhop);
             ImGui::TextDisabled("Hold space to auto-jump");
             ImGui::EndChild();
 
