@@ -175,7 +175,7 @@ inline void RenderMenu(bool& menuOpen) {
             if (settings::aimbotShowFov) {
                 ImGui::Text("Radius");
                 ImGui::SetNextItemWidth(140);
-                ImGui::SliderFloat("##fov", &settings::aimbotFov, 0.5f, 30.f, "%.1f");
+                ImGui::SliderInt("##fov", &settings::aimbotFov, 1, 30, "%d");
             }
 
             ImGui::Dummy(ImVec2(0, 4));
@@ -185,7 +185,7 @@ inline void RenderMenu(bool& menuOpen) {
             if (settings::aimbotSmoothEnabled) {
                 ImGui::Text("Value");
                 ImGui::SetNextItemWidth(140);
-                ImGui::SliderFloat("##smooth", &settings::aimbotSmooth, 0.f, 30.f, "%.1f");
+                ImGui::SliderInt("##smooth", &settings::aimbotSmooth, 1, 30, "%d");
             }
             ImGui::EndChild();
 
@@ -223,7 +223,7 @@ inline void RenderMenu(bool& menuOpen) {
             if (settings::box || settings::boxCorner) {
                 ImGui::Text("Thickness");
                 ImGui::SetNextItemWidth(140);
-                ImGui::SliderFloat("##bthick", &settings::boxThickness, 0.5f, 5.f, "%.1f");
+                ImGui::SliderInt("##bthick", &settings::boxThickness, 1, 5, "%d");
             }
             if (settings::box || settings::boxCorner) {
                 ImGui::Text("Color");
@@ -278,7 +278,7 @@ inline void RenderMenu(bool& menuOpen) {
             if (settings::fovChanger) {
                 ImGui::Text("Value");
                 ImGui::SetNextItemWidth(140);
-                ImGui::SliderFloat("##fovval", &settings::fovValue, 60.f, 120.f, "%.0f");
+                ImGui::SliderInt("##fovval", &settings::fovValue, 60, 120, "%d");
             }
             ImGui::EndChild();
 

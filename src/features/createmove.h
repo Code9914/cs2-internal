@@ -81,7 +81,7 @@ inline __int64 __fastcall hkCreateMove(DWORD* a1, __int64 a2, char a3, double a4
         Vector3 localPos = *(Vector3*)(sceneNode + g_Offsets.m_vecAbsOrigin);
         localPos.z += *(float*)(localPawn + g_Offsets.m_vecViewOffset + 0x20);
 
-        float bestFov = settings::aimbotFov;
+        float bestFov = (float)settings::aimbotFov;
         Vector3 bestAngle;
         bool found = false;
 

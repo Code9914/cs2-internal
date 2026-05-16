@@ -1,21 +1,21 @@
 #pragma once
 #include "../core/includes.h"
 
+#pragma warning(disable: 4474 4477 4996)
+
 inline char g_ConfigPath[MAX_PATH] = {};
 
 inline void SaveConfig() {
     FILE* f = nullptr;
-    if (fopen_s(&f, g_ConfigPath, "wb") || !f) return;
+    if (fopen_s(&f, g_ConfigPath, "w") || !f) return;
 
-    fprintf_s(f, "%d %d %d %d %d %d %d %d %d"
-        " %.1f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f"
-        " %d %d %d %d %d"
-        " %f %f %d %d %d %d %.1f"
-        " %d %d %d",
+    fprintf(f, "%d %d %d %d %d %d %d %d %d %d "
+        "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f "
+        "%d %d %d %d %d %d %d %d %d %d %d %d "
+        "%d %d %d %d %d %d",
         settings::box, settings::boxFilled, settings::boxCorner,
-        settings::health, settings::name, settings::distance, settings::espEnabled,
-        settings::espTeamCheck,
-        settings::watermark,
+        settings::health, settings::name, settings::distance,
+        settings::espEnabled, settings::espTeamCheck, settings::watermark,
         settings::boxThickness,
         settings::boxColor[0], settings::boxColor[1], settings::boxColor[2], settings::boxColor[3],
         settings::boxFilledColor[0], settings::boxFilledColor[1], settings::boxFilledColor[2], settings::boxFilledColor[3],
@@ -25,37 +25,40 @@ inline void SaveConfig() {
         settings::aimbotEnabled, settings::aimbotTeamCheck, settings::aimbotShowFov,
         settings::triggerbotEnabled, settings::triggerbotTeamCheck,
         settings::aimbotFov, settings::aimbotSmooth, settings::aimbotSmoothEnabled,
-        settings::aimbotKey, settings::triggerbotKey, settings::aimbotHitbox,
-        settings::fovValue,
-        settings::noFlash, settings::fovChanger, settings::noFog);
+        settings::aimbotKey, settings::triggerbotKey, settings::aimbotHitbox, settings::fovValue,
+        settings::noFlash, settings::fovChanger, settings::noFog,
+        settings::bhop, settings::aimbotKeyWait, settings::triggerbotKeyWait);
     fclose(f);
 }
 
 inline void LoadConfig() {
     FILE* f = nullptr;
-    if (fopen_s(&f, g_ConfigPath, "rb") || !f) return;
+    if (fopen_s(&f, g_ConfigPath, "r") || !f) return;
 
-    int b = 1, bf = 0, bc = 0, hp = 1, nm = 1, dist = 0, esp = 1, et = 1, wm = 1;
-    int ae = 0, tc = 1, sf = 0, te = 0, tk = 0, se = 0;
-    int ak = VK_LBUTTON, tk2 = VK_MENU, ah = 0, nf = 0, fc = 0, nfg = 0;
-    float bt = 2.f, fov = 8.f, sm = 6.f, fv = 90.f;
+    // Initialize with defaults
+    int b = 0, bf = 0, bc = 0, hp = 0, nm = 0, dist = 0, esp = 0, et = 1, wm = 0;
+    int bt = 2;
     float bcol[4] = {1, 0.55f, 0, 1}, bfill[4] = {0, 0, 0, 0.3f};
     float hcol[4] = {0, 1, 0, 1}, ncol[4] = {1, 1, 1, 1}, dcol[4] = {1, 1, 1, 1};
+    int ae = 0, tc = 1, sf = 0, te = 0, ttk = 1;
+    int fov = 8, sm = 6;
+    int se = 0, ak = VK_LBUTTON, ttk2 = VK_MENU, ah = 0;
+    int fv = 90;
+    int nf = 0, fc = 0, nfg = 0, bh = 0, akw = 0, tkw = 0;
 
-    fscanf_s(f, "%d %d %d %d %d %d %d %d %d"
-        " %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f"
-        " %d %d %d %d %d %f %f %d"
-        " %d %d %d %f"
-        " %d %d %d",
-        &b, &bf, &bc, &hp, &nm, &dist, &esp, &et, &wm,
-        &bt, &bcol[0], &bcol[1], &bcol[2], &bcol[3],
+    fscanf(f, "%d %d %d %d %d %d %d %d %d %d "
+        "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f "
+        "%d %d %d %d %d %d %d %d %d %d %d %d "
+        "%d %d %d %d %d %d",
+        &b, &bf, &bc, &hp, &nm, &dist, &esp, &et, &wm, &bt,
+        &bcol[0], &bcol[1], &bcol[2], &bcol[3],
         &bfill[0], &bfill[1], &bfill[2], &bfill[3],
         &hcol[0], &hcol[1], &hcol[2], &hcol[3],
         &ncol[0], &ncol[1], &ncol[2], &ncol[3],
         &dcol[0], &dcol[1], &dcol[2], &dcol[3],
-        &ae, &tc, &sf, &te, &tk, &fov, &sm, &se,
-        &ak, &tk2, &ah, &fv,
-        &nf, &fc, &nfg);
+        &ae, &tc, &sf, &te, &ttk,
+        &fov, &sm, &se, &ak, &ttk2, &ah, &fv,
+        &nf, &fc, &nfg, &bh, &akw, &tkw);
     fclose(f);
 
     settings::box = b != 0; settings::boxFilled = bf != 0; settings::boxCorner = bc != 0;
@@ -63,23 +66,27 @@ inline void LoadConfig() {
     settings::distance = dist != 0; settings::espEnabled = esp != 0;
     settings::espTeamCheck = et != 0;
     settings::watermark = wm != 0;
+    settings::boxThickness = bt;
+    memcpy(settings::boxColor, bcol, sizeof(bcol));
+    memcpy(settings::boxFilledColor, bfill, sizeof(bfill));
+    memcpy(settings::healthColor, hcol, sizeof(hcol));
+    memcpy(settings::nameColor, ncol, sizeof(ncol));
+    memcpy(settings::distColor, dcol, sizeof(dcol));
     settings::aimbotEnabled = ae != 0; settings::aimbotTeamCheck = tc != 0;
     settings::aimbotShowFov = sf != 0;
-    settings::triggerbotEnabled = te != 0; settings::triggerbotTeamCheck = tk != 0;
+    settings::triggerbotEnabled = te != 0; settings::triggerbotTeamCheck = ttk != 0;
     settings::aimbotFov = fov; settings::aimbotSmooth = sm; settings::aimbotSmoothEnabled = se != 0;
-    settings::aimbotKey = ak; settings::triggerbotKey = tk2;
+    settings::aimbotKey = ak; settings::triggerbotKey = ttk2;
     settings::aimbotHitbox = ah; settings::fovValue = fv;
     settings::noFlash = nf != 0; settings::fovChanger = fc != 0; settings::noFog = nfg != 0;
-    settings::boxThickness = bt;
-    memcpy(settings::boxColor, bcol, 16);
-    memcpy(settings::boxFilledColor, bfill, 16);
-    memcpy(settings::healthColor, hcol, 16);
-    memcpy(settings::nameColor, ncol, 16);
-    memcpy(settings::distColor, dcol, 16);
+    settings::bhop = bh != 0; settings::aimbotKeyWait = akw != 0; settings::triggerbotKeyWait = tkw != 0;
 }
 
 inline void InitConfigPath(HMODULE hMod) {
-    GetModuleFileNameA(hMod, g_ConfigPath, MAX_PATH);
-    char* dot = strrchr(g_ConfigPath, '.');
-    if (dot) strcpy_s(dot, 5, ".cfg");
+    char appData[MAX_PATH];
+    GetEnvironmentVariableA("APPDATA", appData, MAX_PATH);
+    strcat_s(appData, "\\CockEngine");
+    CreateDirectoryA(appData, nullptr);
+    strcpy_s(g_ConfigPath, appData);
+    strcat_s(g_ConfigPath, "\\config.cfg");
 }

@@ -47,19 +47,19 @@ inline void DrawESP() {
                 draw->AddRectFilled(ImVec2(x, y), ImVec2(x + width, y + height),
                     col(settings::boxFilledColor));
             draw->AddRect(ImVec2(x, y), ImVec2(x + width, y + height),
-                col(settings::boxColor), 0.f, 0, settings::boxThickness);
+                col(settings::boxColor), 0.f, 0, (float)settings::boxThickness);
         } else if (settings::boxCorner) {
             float l = width * 0.25f;
             ImU32 c = col(settings::boxColor);
             // corners
-            draw->AddLine(ImVec2(x, y + l), ImVec2(x, y), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x, y), ImVec2(x + l, y), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x + width - l, y), ImVec2(x + width, y), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x + width, y), ImVec2(x + width, y + l), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x, y + height - l), ImVec2(x, y + height), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x, y + height), ImVec2(x + l, y + height), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x + width - l, y + height), ImVec2(x + width, y + height), c, settings::boxThickness);
-            draw->AddLine(ImVec2(x + width, y + height - l), ImVec2(x + width, y + height), c, settings::boxThickness);
+            draw->AddLine(ImVec2(x, y + l), ImVec2(x, y), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x, y), ImVec2(x + l, y), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x + width - l, y), ImVec2(x + width, y), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x + width, y), ImVec2(x + width, y + l), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x, y + height - l), ImVec2(x, y + height), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x, y + height), ImVec2(x + l, y + height), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x + width - l, y + height), ImVec2(x + width, y + height), c, (float)settings::boxThickness);
+            draw->AddLine(ImVec2(x + width, y + height - l), ImVec2(x + width, y + height), c, (float)settings::boxThickness);
         }
 
         if (settings::health) {
