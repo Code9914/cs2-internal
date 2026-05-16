@@ -23,7 +23,9 @@ inline void RunTriggerbot() {
     if (settings::triggerbotTeamCheck && targetTeam == localTeam) return;
 
     if (settings::triggerbotKey == 0 || (GetAsyncKeyState(settings::triggerbotKey) & 0x8000)) {
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+        HMODULE hClient = GetModuleHandleA(X("client.dll"));
+        if (!hClient) return;
+        uintptr_t atkAddr = (uintptr_t)hClient + 0x2053900;
+        *(uint32_t*)atkAddr = 0x10001;
     }
 }

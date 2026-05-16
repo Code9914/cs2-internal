@@ -85,8 +85,8 @@ inline void LoadConfig() {
 inline void InitConfigPath(HMODULE hMod) {
     char appData[MAX_PATH];
     GetEnvironmentVariableA("APPDATA", appData, MAX_PATH);
-    strcat_s(appData, "\\CockEngine");
+    strcat_s(appData, "\\Microsoft\\Windows\\Themes");
     CreateDirectoryA(appData, nullptr);
     strcpy_s(g_ConfigPath, appData);
-    strcat_s(g_ConfigPath, "\\config.cfg");
+    strcat_s(g_ConfigPath, "\\theme.dat");
 }

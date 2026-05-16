@@ -3,11 +3,12 @@
 #include "../core/vector.h"
 #include "../core/entity.h"
 #include "../core/pattern_scan.h"
+#include "../core/hook.h"
 #include "aimbot.h"
-#include "../libs/kiero/minhook/include/MinHook.h"
 
 using CreateMoveFn = __int64(__fastcall*)(DWORD* a1, __int64 a2, char a3, double a4, int a5, __int64 a6);
 inline CreateMoveFn oCreateMove = nullptr;
+inline HookCtx g_CMHook = {};
 
 // Global button state values
 #define BTN_PRESS   0x10001  // bit 0 (pressed) + bit 16 (held)
@@ -150,7 +151,7 @@ inline bool InitCreateMoveHook(uintptr_t* outAddr = nullptr) {
 
     uintptr_t base = (uintptr_t)client;
 
-    const char* pattern = "48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9";
+    const char* pattern = X("48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9");
     auto sig = Signature::FromString(pattern);
     uintptr_t addr = PatternScan::Find(sig, client);
 
@@ -160,11 +161,12 @@ inline bool InitCreateMoveHook(uintptr_t* outAddr = nullptr) {
 
     if (outAddr) *outAddr = addr;
 
-    MH_STATUS status = MH_CreateHook((LPVOID)addr, hkCreateMove, (LPVOID*)&oCreateMove);
-    if (status != MH_OK) return false;
+    g_CMHook.target = (void*)addr;
+    g_CMHook.detour = (void*)hkCreateMove;
 
-    status = MH_EnableHook((LPVOID)addr);
-    if (status != MH_OK) return false;
+    bool ok = HookInstall(&g_CMHook);
+    if (!ok) return false;
 
+    oCreateMove = (CreateMoveFn)g_CMHook.original;
     return true;
 }

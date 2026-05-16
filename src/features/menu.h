@@ -144,7 +144,7 @@ inline void RenderKeyBinder(const char* label, int& key, bool& keyWait) {
 
 inline void RenderMenu(bool& menuOpen) {
     ImGui::SetNextWindowSize(ImVec2(760, 620), ImGuiCond_Always);
-    ImGui::Begin("CockEngine", &menuOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+    ImGui::Begin(X("CE"), &menuOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
     if (ImGui::BeginTabBar("Tabs")) {
         float winW = ImGui::GetContentRegionAvail().x;
@@ -341,8 +341,8 @@ inline void RenderMenu(bool& menuOpen) {
             float aboutH = 160;
 
             ImGui::Dummy(ImVec2(0, 4));
-            ImGui::SetCursorPosX((winW - ImGui::CalcTextSize("CockEngine").x) * 0.5f);
-            ImGui::TextColored(ImVec4(1.f, 0.55f, 0.f, 1.f), "CockEngine");
+            ImGui::SetCursorPosX((winW - ImGui::CalcTextSize(X("CE")).x) * 0.5f);
+            ImGui::TextColored(ImVec4(1.f, 0.55f, 0.f, 1.f), X("CE"));
             ImGui::SetCursorPosX((winW - ImGui::CalcTextSize("v1.0").x) * 0.5f);
             ImGui::TextDisabled("v1.0");
             ImGui::Dummy(ImVec2(0, 2));
@@ -385,7 +385,7 @@ inline void RenderMenu(bool& menuOpen) {
 
             ImGui::Dummy(ImVec2(0, 4));
             ImGui::Separator();
-            ImGui::TextDisabled("Built: %s", __DATE__);
+            ImGui::TextDisabled("Build: Release x64");
 
             ImGui::EndTabItem();
         }

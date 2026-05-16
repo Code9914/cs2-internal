@@ -67,12 +67,11 @@ kiero::Status::Enum kiero::init(RenderType::Enum _renderType)
 			windowClass.hCursor = NULL;
 			windowClass.hbrBackground = NULL;
 			windowClass.lpszMenuName = NULL;
-			windowClass.lpszClassName = KIERO_TEXT("Kiero");
-			windowClass.hIconSm = NULL;
+			windowClass.lpszClassName = KIERO_TEXT("DXHelper");
 
 			::RegisterClassEx(&windowClass);
 
-			HWND window = ::CreateWindow(windowClass.lpszClassName, KIERO_TEXT("Kiero DirectX Window"), WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, windowClass.hInstance, NULL);
+			HWND window = ::CreateWindow(windowClass.lpszClassName, KIERO_TEXT("DX Helper Window"), WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, windowClass.hInstance, NULL);
 
 			if (_renderType == RenderType::D3D9)
 			{

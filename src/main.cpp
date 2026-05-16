@@ -14,62 +14,8 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 
 HMODULE g_hModule = nullptr;
 
-// --- Crash Handler (no external deps) ---
-static const char* ExceptionCodeToString(DWORD code) {
-    switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION: return "ACCESS_VIOLATION (bad pointer)";
-        case EXCEPTION_INT_DIVIDE_BY_ZERO: return "DIVIDE_BY_ZERO";
-        case EXCEPTION_STACK_OVERFLOW: return "STACK_OVERFLOW";
-        case EXCEPTION_BREAKPOINT: return "BREAKPOINT";
-        case EXCEPTION_ILLEGAL_INSTRUCTION: return "ILLEGAL_INSTRUCTION";
-        case EXCEPTION_IN_PAGE_ERROR: return "IN_PAGE_ERROR";
-        default: return "UNKNOWN";
-    }
-}
-
+// Silent crash handler — no disk writes
 static LONG WINAPI CrashHandler(PEXCEPTION_POINTERS info) {
-    char path[MAX_PATH];
-    HMODULE hMod = g_hModule;
-    if (hMod) {
-        GetModuleFileNameA(hMod, path, MAX_PATH);
-        for (int i = (int)strlen(path) - 1; i >= 0; i--) {
-            if (path[i] == '\\' || path[i] == '/') { path[i + 1] = '\0'; break; }
-        }
-        strcat_s(path, "crash.log");
-    } else {
-        strcpy_s(path, "crash.log");
-    }
-
-    FILE* f = nullptr;
-    fopen_s(&f, path, "w");
-    if (f) {
-        PEXCEPTION_RECORD rec = info->ExceptionRecord;
-        PCONTEXT ctx = info->ContextRecord;
-
-        fprintf(f, "=== CRASH LOG ===\n");
-        fprintf(f, "Exception: 0x%08X (%s)\n", rec->ExceptionCode, ExceptionCodeToString(rec->ExceptionCode));
-        fprintf(f, "Address: 0x%p\n", rec->ExceptionAddress);
-
-        if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
-            fprintf(f, "Access type: %s\n", rec->ExceptionInformation[0] == 0 ? "READ" : "WRITE");
-            fprintf(f, "Bad address: 0x%p\n", (void*)rec->ExceptionInformation[1]);
-        }
-
-        fprintf(f, "\nRegisters:\n");
-        fprintf(f, "  RIP=0x%llX RAX=0x%llX RBX=0x%llX RCX=0x%llX\n", ctx->Rip, ctx->Rax, ctx->Rbx, ctx->Rcx);
-        fprintf(f, "  RDX=0x%llX RSI=0x%llX RDI=0x%llX RSP=0x%llX\n", ctx->Rdx, ctx->Rsi, ctx->Rdi, ctx->Rsp);
-        fprintf(f, "  R8 =0x%llX R9 =0x%llX R10=0x%llX R11=0x%llX\n", ctx->R8, ctx->R9, ctx->R10, ctx->R11);
-        fprintf(f, "  R12=0x%llX R13=0x%llX R14=0x%llX R15=0x%llX\n", ctx->R12, ctx->R13, ctx->R14, ctx->R15);
-
-        fprintf(f, "\nOffsets state:\n");
-        fprintf(f, "  entityList=0x%llX viewAngles=0x%llX viewMatrix=0x%llX\n",
-            g_Offsets.entityList, g_Offsets.viewAngles, g_Offsets.viewMatrix);
-        fprintf(f, "  localPlayerPawn=0x%llX gameEntitySystem=0x%llX\n",
-            g_Offsets.localPlayerPawn, g_Offsets.gameEntitySystem);
-
-        fclose(f);
-    }
-
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -144,7 +90,8 @@ DWORD WINAPI CleanupThread(LPVOID) {
     }
 
     kiero::shutdown();
-    FreeLibraryAndExitThread(g_hModule, 0);
+    HookRemove(&g_CMHook);
+    ExitThread(0);
     return 0;
 }
 
@@ -287,10 +234,10 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 void InitProtection() {
     HWND gameWnd = nullptr;
     while (!gameWnd) {
-        gameWnd = FindWindowA(X("SDL_app"), nullptr);
+        gameWnd = GetForegroundWindow();
+        if (gameWnd) break;
         Sleep(50);
     }
-    SetWindowDisplayAffinity(gameWnd, WDA_EXCLUDEFROMCAPTURE);
 }
 
 DWORD WINAPI MainThread(LPVOID lpParam) {
