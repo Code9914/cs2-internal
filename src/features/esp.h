@@ -71,17 +71,9 @@ inline void DrawESP() {
                 IM_COL32(0, 0, 0, 180), 0.f, 0, 1.f);
         }
 
-        // Team tag
-        {
-            const char* tag = (players[i].team == 2) ? "[T]" : "[CT]";
-            ImVec2 ts = ImGui::CalcTextSize(tag);
-            draw->AddText(ImVec2(x + width / 2 - ts.x / 2, y - 15),
-                players[i].team == 2 ? IM_COL32(200,50,50,255) : IM_COL32(50,130,255,255), tag);
-        }
-
         if (settings::name && players[i].name[0]) {
             ImVec2 textSize = ImGui::CalcTextSize(players[i].name);
-            draw->AddText(ImVec2(x + width / 2 - textSize.x / 2, y - 15 - 14),
+            draw->AddText(ImVec2(x + width / 2 - textSize.x / 2, y - 15),
                 col(settings::nameColor), players[i].name);
         }
 

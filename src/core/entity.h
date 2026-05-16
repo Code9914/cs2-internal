@@ -107,10 +107,18 @@ inline void UpdateEntities() {
             players[i].team = team;
             *(uintptr_t*)players[i].name = 0;
 
+            // Try m_sSanitizedPlayerName (CUtlString, pointer at offset 0)
             uintptr_t nameAddr = controller + g_Offsets.m_sSanitizedPlayerName;
             const char* namePtr = *(const char**)(nameAddr);
             if (namePtr && (uintptr_t)namePtr > 0x100000)
                 strcpy_s(players[i].name, namePtr);
+
+            // Fallback: m_iszPlayerName (char[128] inline)
+            if (!players[i].name[0]) {
+                const char* inlineName = (const char*)(controller + g_Offsets.m_iszPlayerName);
+                if (inlineName && inlineName[0])
+                    strcpy_s(players[i].name, inlineName);
+            }
 
             players[i].valid = true;
 

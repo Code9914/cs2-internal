@@ -30,6 +30,7 @@ struct GameOffsets {
     int32_t m_iTeamNum              = 0x3EB;
     int32_t m_hPlayerPawn           = 0x90C;
     int32_t m_sSanitizedPlayerName  = 0x860;
+    int32_t m_iszPlayerName         = 0x6F4; // char[128] in CBasePlayerController
     int32_t m_vecAbsOrigin          = 0xC8;
     int32_t m_fFlags                = 0x3F8;
     int32_t m_vecViewOffset         = 0xE70;
