@@ -29,6 +29,7 @@ Cheat interne pour Counter-Strike 2 avec un aimbot basé sur CreateMove et un ov
 - **No Fog** — supprime le brouillard
 
 ### Misc
+- **Bhop** — saut automatique en maintenant espace (via global button state)
 - **Watermark** — overlay FPS, ping et nom du cheat
 - **Système de config** — sauvegarde/chargement des paramètres dans un fichier `.cfg`
 
@@ -78,7 +79,7 @@ src/
 │   └── pattern_scan.h    # Moteur de signature scanning
 ├── features/
 │   ├── aimbot.h          # Paramètres aimbot, DrawFOV, KeyName
-│   ├── createmove.h      # Hook CreateMove + logique aimbot
+│   ├── createmove.h      # Hook CreateMove + logique aimbot + bhop
 │   ├── esp.h             # Rendu ESP (boîtes, vie, noms)
 │   ├── triggerbot.h      # Logique triggerbot
 │   ├── visuals.h         # NoFlash, FOV Changer, NoFog
