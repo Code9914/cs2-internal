@@ -36,13 +36,14 @@ inline int GetLocalTeam() {
     __try {
         uintptr_t lp = GetLocalPawn();
         if (!lp) return 0;
+        if (!g_EntityList || g_EntityList < 0x100000) return 0;
         for (int i = 1; i <= 64; i++) {
             uintptr_t ctrl = GetEntity(g_EntityList, i);
-            if (!ctrl) continue;
+            if (!ctrl || ctrl < 0x100000) continue;
             uint32_t ph = *(uint32_t*)(ctrl + g_Offsets.m_hPlayerPawn);
             if (!ph) continue;
             uintptr_t pawn = GetEntity(g_EntityList, ph);
-            if (pawn == lp)
+            if (pawn && pawn == lp)
                 return *(uint8_t*)(ctrl + 0x840);
         }
     } __except(EXCEPTION_EXECUTE_HANDLER) {}

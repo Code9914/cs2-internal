@@ -66,66 +66,80 @@ inline __int64 __fastcall hkCreateMove(DWORD* a1, __int64 a2, char a3, double a4
     if (settings::aimbotKey != 0 && !(GetAsyncKeyState(settings::aimbotKey) & 0x8000))
         return result;
 
-    uintptr_t localPawn = GetLocalPawn();
-    if (!localPawn) return result;
+    __try {
+        if (!g_Offsets.viewAngles || g_Offsets.viewAngles < 0x100000) return result;
 
-    int localTeam = GetLocalTeam();
-    if (!localTeam) return result;
+        uintptr_t localPawn = GetLocalPawn();
+        if (!localPawn) return result;
 
-    uintptr_t sceneNode = *(uintptr_t*)(localPawn + g_Offsets.m_pGameSceneNode);
-    if (!sceneNode) return result;
-    Vector3 localPos = *(Vector3*)(sceneNode + g_Offsets.m_vecAbsOrigin);
-    localPos.z += *(float*)(localPawn + g_Offsets.m_vecViewOffset + 0x20);
+        int localTeam = GetLocalTeam();
+        if (!localTeam) return result;
 
-    float bestFov = settings::aimbotFov;
-    Vector3 bestAngle;
-    bool found = false;
-    int validCount = 0;
+        uintptr_t sceneNode = *(uintptr_t*)(localPawn + g_Offsets.m_pGameSceneNode);
+        if (!sceneNode || sceneNode < 0x100000) return result;
 
-    for (int i = 1; i <= 64; i++) {
-        if (!players[i].valid) continue;
-        if (settings::aimbotTeamCheck && players[i].team == localTeam) continue;
-        validCount++;
+        Vector3 localPos = *(Vector3*)(sceneNode + g_Offsets.m_vecAbsOrigin);
+        localPos.z += *(float*)(localPawn + g_Offsets.m_vecViewOffset + 0x20);
 
-        int boneIndices[] = { 0, 1, 4 };
-        int boneIdx = boneIndices[settings::aimbotHitbox];
-        Vector3 aimPos = GetBonePos(players[i].pawn, boneIdx);
-        if (aimPos.x == 0.f && aimPos.y == 0.f && aimPos.z == 0.f) continue;
+        float bestFov = settings::aimbotFov;
+        Vector3 bestAngle;
+        bool found = false;
 
-        Vector3 angle = CalcAngle(localPos, aimPos);
+        for (int i = 1; i <= 64; i++) {
+            if (!players[i].valid) continue;
+            if (!players[i].pawn || players[i].pawn < 0x100000) continue;
+            if (settings::aimbotTeamCheck && players[i].team == localTeam) continue;
 
-        float curPitch = *(float*)(g_Offsets.viewAngles + 0x0);
-        float curYaw   = *(float*)(g_Offsets.viewAngles + 0x4);
+            int boneIndices[] = { 0, 1, 4 };
+            int boneIdx = boneIndices[settings::aimbotHitbox];
+            Vector3 aimPos = GetBonePos(players[i].pawn, boneIdx);
+            if (aimPos.x == 0.f && aimPos.y == 0.f && aimPos.z == 0.f) continue;
 
-        float dp = NormalizeAngle(angle.x - curPitch);
-        float dy = NormalizeAngle(angle.y - curYaw);
+            Vector3 angle = CalcAngle(localPos, aimPos);
 
-        float fov = sqrtf(dp * dp + dy * dy);
-        if (fov < bestFov) {
-            bestFov = fov;
-            bestAngle = angle;
-            found = true;
-        }
-    }
-
-    if (found) {
-        if (settings::aimbotSmoothEnabled && settings::aimbotSmooth > 1.f) {
             float curPitch = *(float*)(g_Offsets.viewAngles + 0x0);
             float curYaw   = *(float*)(g_Offsets.viewAngles + 0x4);
 
-            float dp = NormalizeAngle(bestAngle.x - curPitch);
-            float dy = NormalizeAngle(bestAngle.y - curYaw);
+            float dp = NormalizeAngle(angle.x - curPitch);
+            float dy = NormalizeAngle(angle.y - curYaw);
 
-            dp /= settings::aimbotSmooth;
-            dy /= settings::aimbotSmooth;
-
-            *(float*)(g_Offsets.viewAngles + 0x0) = curPitch + dp;
-            *(float*)(g_Offsets.viewAngles + 0x4) = curYaw + dy;
-        } else {
-            *(float*)(g_Offsets.viewAngles + 0x0) = bestAngle.x;
-            *(float*)(g_Offsets.viewAngles + 0x4) = bestAngle.y;
+            float fov = sqrtf(dp * dp + dy * dy);
+            if (fov < bestFov) {
+                bestFov = fov;
+                bestAngle = angle;
+                found = true;
+            }
         }
-    }
+
+        if (found) {
+            float curPitch = *(float*)(g_Offsets.viewAngles + 0x0);
+            float curYaw   = *(float*)(g_Offsets.viewAngles + 0x4);
+
+            if (settings::aimbotSmoothEnabled && settings::aimbotSmooth > 1.f) {
+                float dp = NormalizeAngle(bestAngle.x - curPitch);
+                float dy = NormalizeAngle(bestAngle.y - curYaw);
+
+                dp /= settings::aimbotSmooth;
+                dy /= settings::aimbotSmooth;
+
+                float newPitch = curPitch + dp;
+                float newYaw = curYaw + dy;
+                if (newPitch < -89.f) newPitch = -89.f;
+                if (newPitch > 89.f) newPitch = 89.f;
+
+                *(float*)(g_Offsets.viewAngles + 0x0) = newPitch;
+                *(float*)(g_Offsets.viewAngles + 0x4) = newYaw;
+            } else {
+                float p = bestAngle.x;
+                float y = bestAngle.y;
+                if (p < -89.f) p = -89.f;
+                if (p > 89.f) p = 89.f;
+
+                *(float*)(g_Offsets.viewAngles + 0x0) = p;
+                *(float*)(g_Offsets.viewAngles + 0x4) = y;
+            }
+        }
+    } __except(EXCEPTION_EXECUTE_HANDLER) {}
 
     return result;
 }
@@ -136,7 +150,6 @@ inline bool InitCreateMoveHook(uintptr_t* outAddr = nullptr) {
 
     uintptr_t base = (uintptr_t)client;
 
-    // CreateMove prologue: mov [rsp+?], rbx; push rbp; push rdi; push r14; lea rbp, [rsp-?]; sub rsp, ?; mov eax, [rcx]; mov rdi, rcx
     const char* pattern = "48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9";
     auto sig = Signature::FromString(pattern);
     uintptr_t addr = PatternScan::Find(sig, client);

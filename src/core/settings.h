@@ -19,7 +19,7 @@ namespace settings {
     inline float  distColor[4]   = { 1.f, 1.f, 1.f, 1.f };
 
     // --- Aimbot ---
-    inline bool   aimbotEnabled      = false;
+    inline bool   aimbotEnabled      = true;
     inline int    aimbotKey          = VK_LBUTTON;
     inline bool   aimbotKeyWait      = false;
     inline int    aimbotHitbox       = 0;
@@ -42,5 +42,6 @@ namespace settings {
     inline bool   noFog      = false;
 
     // --- Misc ---
+    inline bool   bhop       = true;
     inline bool   watermark  = true;
 }

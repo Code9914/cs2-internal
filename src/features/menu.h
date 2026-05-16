@@ -299,7 +299,6 @@ inline void RenderMenu(bool& menuOpen) {
             SectionHeader("Bhop");
 
             RenderSwitch("Enabled", &settings::bhop);
-            ImGui::TextDisabled("Hold space to auto-jump");
             ImGui::EndChild();
 
             ImGui::SameLine();

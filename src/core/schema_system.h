@@ -39,7 +39,6 @@ inline bool InitSchemaSystem(CreateInterfaceFn fn) {
         auto scope = g_SchemaSystem->FindTypeScopeForModule("client.dll");
         if (!scope) return false;
         if (!scope->FindDeclaredClass("C_BaseEntity")) return false;
-        printf("[Schema] OK\n");
         return true;
     } __except(EXCEPTION_EXECUTE_HANDLER) {
         g_SchemaSystem = nullptr;
@@ -72,7 +71,6 @@ inline int32_t ResolveSchemaOffset(const char* className, const char* fieldName,
                 __try {
                     if (_stricmp(name, fieldName) == 0) {
                         int32_t offset = *(int32_t*)(field + 0x10);
-                        printf("[Schema] %s::%s = 0x%X\n", className, fieldName, offset);
                         return offset;
                     }
                 } __except(EXCEPTION_EXECUTE_HANDLER) {}

@@ -12,6 +12,67 @@
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+HMODULE g_hModule = nullptr;
+
+// --- Crash Handler (no external deps) ---
+static const char* ExceptionCodeToString(DWORD code) {
+    switch (code) {
+        case EXCEPTION_ACCESS_VIOLATION: return "ACCESS_VIOLATION (bad pointer)";
+        case EXCEPTION_INT_DIVIDE_BY_ZERO: return "DIVIDE_BY_ZERO";
+        case EXCEPTION_STACK_OVERFLOW: return "STACK_OVERFLOW";
+        case EXCEPTION_BREAKPOINT: return "BREAKPOINT";
+        case EXCEPTION_ILLEGAL_INSTRUCTION: return "ILLEGAL_INSTRUCTION";
+        case EXCEPTION_IN_PAGE_ERROR: return "IN_PAGE_ERROR";
+        default: return "UNKNOWN";
+    }
+}
+
+static LONG WINAPI CrashHandler(PEXCEPTION_POINTERS info) {
+    char path[MAX_PATH];
+    HMODULE hMod = g_hModule;
+    if (hMod) {
+        GetModuleFileNameA(hMod, path, MAX_PATH);
+        for (int i = (int)strlen(path) - 1; i >= 0; i--) {
+            if (path[i] == '\\' || path[i] == '/') { path[i + 1] = '\0'; break; }
+        }
+        strcat_s(path, "crash.log");
+    } else {
+        strcpy_s(path, "crash.log");
+    }
+
+    FILE* f = nullptr;
+    fopen_s(&f, path, "w");
+    if (f) {
+        PEXCEPTION_RECORD rec = info->ExceptionRecord;
+        PCONTEXT ctx = info->ContextRecord;
+
+        fprintf(f, "=== CRASH LOG ===\n");
+        fprintf(f, "Exception: 0x%08X (%s)\n", rec->ExceptionCode, ExceptionCodeToString(rec->ExceptionCode));
+        fprintf(f, "Address: 0x%p\n", rec->ExceptionAddress);
+
+        if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
+            fprintf(f, "Access type: %s\n", rec->ExceptionInformation[0] == 0 ? "READ" : "WRITE");
+            fprintf(f, "Bad address: 0x%p\n", (void*)rec->ExceptionInformation[1]);
+        }
+
+        fprintf(f, "\nRegisters:\n");
+        fprintf(f, "  RIP=0x%llX RAX=0x%llX RBX=0x%llX RCX=0x%llX\n", ctx->Rip, ctx->Rax, ctx->Rbx, ctx->Rcx);
+        fprintf(f, "  RDX=0x%llX RSI=0x%llX RDI=0x%llX RSP=0x%llX\n", ctx->Rdx, ctx->Rsi, ctx->Rdi, ctx->Rsp);
+        fprintf(f, "  R8 =0x%llX R9 =0x%llX R10=0x%llX R11=0x%llX\n", ctx->R8, ctx->R9, ctx->R10, ctx->R11);
+        fprintf(f, "  R12=0x%llX R13=0x%llX R14=0x%llX R15=0x%llX\n", ctx->R12, ctx->R13, ctx->R14, ctx->R15);
+
+        fprintf(f, "\nOffsets state:\n");
+        fprintf(f, "  entityList=0x%llX viewAngles=0x%llX viewMatrix=0x%llX\n",
+            g_Offsets.entityList, g_Offsets.viewAngles, g_Offsets.viewMatrix);
+        fprintf(f, "  localPlayerPawn=0x%llX gameEntitySystem=0x%llX\n",
+            g_Offsets.localPlayerPawn, g_Offsets.gameEntitySystem);
+
+        fclose(f);
+    }
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
 Present oPresent;
 HWND window = NULL;
 WNDPROC oWndProc;
@@ -21,7 +82,6 @@ ID3D11RenderTargetView* mainRenderTargetView;
 
 bool menuOpen = false;
 bool g_UnloadRequested = false;
-HMODULE g_hModule = nullptr;
 
 // Global engine client pointer (shared by createmove.h and cs2_runtime.h)
 void* g_EngineClient = nullptr;
@@ -163,6 +223,9 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
         }
     }
 
+    static int frameCount = 0;
+    frameCount++;
+
     if (GetAsyncKeyState(VK_INSERT) & 1) {
         menuOpen = !menuOpen;
         ImGuiIO& io = ImGui::GetIO();
@@ -173,10 +236,14 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
     if (GetAsyncKeyState(VK_END) & 1)
         RequestUnload();
 
+    // Re-enable entity updates for aimbot/bhop
     __try { UpdateEntities(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
 
+    // D3D11 frame setup - now uses dynamic D3DCompile loading
     ImGui_ImplDX11_NewFrame();
+
     ImGui_ImplWin32_NewFrame();
+
     ImGui::NewFrame();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -195,17 +262,25 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
     if (menuOpen)
         RenderMenu(menuOpen);
 
-    __try { if (settings::aimbotShowFov) DrawFOV(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
-    __try { if (settings::espEnabled) DrawESP(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
-    __try { RunTriggerbot(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
-    __try { ApplyVisuals(); } __except(EXCEPTION_EXECUTE_HANDLER) {}
-
     if (settings::watermark && !menuOpen)
         RenderWatermark();
+
+    if (settings::triggerbotEnabled)
+        RunTriggerbot();
+
+    if (settings::fovChanger || settings::noFlash || settings::noFog)
+        ApplyVisuals();
+
+    if (settings::espEnabled && (settings::box || settings::boxCorner || settings::health || settings::name || settings::distance))
+        DrawESP();
+
+    if (settings::aimbotShowFov)
+        DrawFOV();
 
     ImGui::Render();
     pContext->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
     return oPresent(pSwapChain, SyncInterval, Flags);
 }
 
@@ -244,6 +319,8 @@ DWORD WINAPI MainThread(LPVOID lpParam) {
             kiero::bind(8, (void**)&oPresent, hkPresent);
             g_Status.presentHooked = true;
             init_hook = true;
+        } else {
+            Sleep(100);
         }
     } while (!init_hook);
 
@@ -259,7 +336,9 @@ DWORD WINAPI MainThread(LPVOID lpParam) {
 BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved) {
     switch (dwReason) {
     case DLL_PROCESS_ATTACH:
+        g_hModule = hMod;
         DisableThreadLibraryCalls(hMod);
+        SetUnhandledExceptionFilter(CrashHandler);
         CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
         break;
     case DLL_PROCESS_DETACH:

@@ -1,6 +1,6 @@
 # CockEngine
 
-Cheat interne pour Counter-Strike 2 avec un aimbot basé sur CreateMove et un overlay ESP.
+Cheat interne pour Counter-Strike 2 avec injection par **Manual Mapping**, aimbot basé sur CreateMove et overlay ESP via ImGui/D3D11.
 
 ## Fonctionnalités
 
@@ -33,6 +33,19 @@ Cheat interne pour Counter-Strike 2 avec un aimbot basé sur CreateMove et un ov
 - **Watermark** — overlay FPS, ping et nom du cheat
 - **Système de config** — sauvegarde/chargement des paramètres dans un fichier `.cfg`
 
+## Injection
+
+### Manual Mapping
+L'injecteur utilise le **Manual Mapping** pour charger la DLL sans passer par `LoadLibrary` :
+- Mapping de l'image en mémoire locale puis écriture dans le processus cible
+- Résolution des imports via `LoadLibrary`/`GetProcAddress` côté injecteur
+- Application des relocations `IMAGE_REL_BASED_DIR64`
+- Exécution de `DllMain` via shellcode x64
+
+### D3D11 & ImGui
+- `D3DCompile` chargé dynamiquement via `LoadLibrary("d3dcompiler_47.dll")` pour la compatibilité manual mapping
+- Crash handler SEH intégré qui génère un `crash.log` avec registres et état des offsets
+
 ## Build
 
 ### Prérequis
@@ -53,7 +66,7 @@ build_injector.bat
 
 1. Compilez la DLL et l'injecteur avec les fichiers batch fournis
 2. Lancez CS2
-3. Exécutez `injector.exe` et sélectionnez `cs2_internal.dll`
+3. Exécutez `injector.exe .\cs2_internal.dll`
 4. Appuyez sur **INSERT** pour ouvrir le menu
 
 ### Touches
@@ -66,9 +79,9 @@ build_injector.bat
 
 ```
 src/
-├── main.cpp              # Point d'entrée, hook Present, DllMain
+├── main.cpp              # Point d'entrée, hook Present, DllMain, crash handler
 ├── core/
-│   ├── includes.h        # Headers communs
+│   ├── includes.h        # Headers communs + crypto.h (string obfuscation)
 │   ├── settings.h        # Tous les settings consolidés
 │   ├── config.h          # Sauvegarde/chargement config
 │   ├── vector.h          # Vector3, ViewMatrix, WorldToScreen
@@ -76,7 +89,7 @@ src/
 │   ├── game_offsets.h    # Offsets schema & variables globales
 │   ├── cs2_runtime.h     # Init SchemaSystem & résolution offsets
 │   ├── schema_system.h   # Interface vtable SchemaSystem
-│   └── pattern_scan.h    # Moteur de signature scanning
+│   └── pattern_scan.h    # Moteur de signature scanning + RVA resolution
 ├── features/
 │   ├── aimbot.h          # Paramètres aimbot, DrawFOV, KeyName
 │   ├── createmove.h      # Hook CreateMove + logique aimbot + bhop
@@ -87,4 +100,6 @@ src/
 └── libs/
     ├── imgui/            # Dear ImGui (v1.90)
     └── kiero/            # Kiero D3D hook + MinHook
+injector/
+└── main.cpp              # Manual mapping injector (x64)
 ```

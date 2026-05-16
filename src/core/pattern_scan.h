@@ -50,26 +50,27 @@ public:
         if (!module || sig.bytes.empty()) return 0;
 
         auto dos = (const IMAGE_DOS_HEADER*)module;
+        if (dos->e_magic != IMAGE_DOS_SIGNATURE) return 0;
         auto nt  = (const IMAGE_NT_HEADERS*)((uintptr_t)module + dos->e_lfanew);
+        if (nt->Signature != IMAGE_NT_SIGNATURE) return 0;
         uintptr_t base = (uintptr_t)module;
-        size_t imageSize = nt->OptionalHeader.SizeOfImage;
+        auto sections = IMAGE_FIRST_SECTION(nt);
 
         __try {
-            uintptr_t result = FindInRange(sig, base, imageSize);
-            if (result) {
-                // Count total matches for debugging
-                int count = 0;
-                uintptr_t scan = result + 1;
-                while (scan < base + imageSize) {
-                    uintptr_t next = FindInRange(sig, scan, base + imageSize - scan);
-                    if (!next) break;
-                    count++;
-                    scan = next + 1;
-                    if (count > 10) break;
+            for (WORD i = 0; i < nt->FileHeader.NumberOfSections; ++i) {
+                auto& sec = sections[i];
+                if (!(sec.Characteristics & IMAGE_SCN_MEM_EXECUTE)) continue;
+                if (!sec.VirtualAddress || !sec.SizeOfRawData) continue;
+
+                uintptr_t secStart = base + sec.VirtualAddress;
+                size_t secSize = sec.Misc.VirtualSize ? sec.Misc.VirtualSize : sec.SizeOfRawData;
+
+                uintptr_t result = FindInRange(sig, secStart, secSize);
+                if (result) {
+                    return result;
                 }
-                if (count > 0) printf("[PS] Found %d matches, using first at 0x%llX\n", count + 1, result);
             }
-            return result;
+            return 0;
         } __except(EXCEPTION_EXECUTE_HANDLER) {
             return 0;
         }
@@ -87,17 +88,12 @@ public:
         return (matchAddr + instrOffset + 4) + displ;
     }
 
-    // Convenience: parse pattern, find, read offset value
     static bool FindOffset(const std::string& pattern, const std::string& name,
                            HMODULE mod, int32_t readOff, int32_t& out) {
         auto sig = Signature::FromString(pattern);
         uintptr_t addr = Find(sig, mod);
-        if (!addr) {
-            printf("[PS] FAIL: %s\n", name.c_str());
-            return false;
-        }
+        if (!addr) return false;
         out = ReadOffset(addr, readOff);
-        printf("[PS] OK: %s = 0x%X\n", name.c_str(), out);
         return true;
     }
 
@@ -106,12 +102,8 @@ public:
                             HMODULE mod, int32_t instrOff, uintptr_t& out) {
         auto sig = Signature::FromString(pattern);
         uintptr_t addr = Find(sig, mod);
-        if (!addr) {
-            printf("[PS] FAIL: %s\n", name.c_str());
-            return false;
-        }
+        if (!addr) return false;
         out = ResolveRip(addr, instrOff);
-        printf("[PS] OK: %s = 0x%llX\n", name.c_str(), out);
         return true;
     }
 
@@ -174,7 +166,6 @@ public:
 
                     if (resolved == target) {
                         out = resolved;
-                        printf("[PS-RVA] OK: %s = 0x%llX (instr)\n", name, out);
                         return true;
                     }
                 }
@@ -196,13 +187,11 @@ public:
                 uintptr_t val = *(uintptr_t*)(data + j);
                 if (val == target) {
                     out = base + sec.VirtualAddress + j;
-                    printf("[PS-RVA] OK: %s = 0x%llX (data ptr)\n", name, out);
                     return true;
                 }
             }
         }
 
-        printf("[PS-RVA] FAIL: %s (RVA 0x%llX)\n", name, (uint64_t)rva);
         return false;
     }
 
