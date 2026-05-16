@@ -18,10 +18,6 @@ typedef NTSTATUS(NTAPI* _NtCreateThreadEx)(
     PVOID StartRoutine, PVOID Argument, ULONG CreateFlags,
     SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PVOID AttributeList);
 
-typedef NTSTATUS(NTAPI* _NtSetInformationThread)(
-    HANDLE ThreadHandle, ULONG ThreadInformationClass,
-    PVOID ThreadInformation, ULONG ThreadInformationLength);
-
 typedef NTSTATUS(NTAPI* _RtlAdjustPrivilege)(
     ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread, PBOOLEAN Enabled);
 
@@ -83,12 +79,6 @@ bool InjectNT(DWORD pid, const std::string& dllPath) {
         std::cerr << "  NtCreateThreadEx failed: 0x" << std::hex << status << std::dec << std::endl;
         VirtualFreeEx(process, remoteMem, 0, MEM_RELEASE); CloseHandle(process); return false;
     }
-
-    // Hide thread from debugger
-    auto NtSetInformationThread = (_NtSetInformationThread)GetProcAddress(
-        GetModuleHandleA("ntdll.dll"), "NtSetInformationThread");
-    if (NtSetInformationThread)
-        NtSetInformationThread(thread, 0x11 /* ThreadHideFromDebugger */, nullptr, 0);
 
     WaitForSingleObject(thread, INFINITE);
     DWORD exitCode;

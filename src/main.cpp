@@ -23,6 +23,9 @@ bool menuOpen = false;
 bool g_UnloadRequested = false;
 HMODULE g_hModule = nullptr;
 
+// Global engine client pointer (shared by createmove.h and cs2_runtime.h)
+void* g_EngineClient = nullptr;
+
 CheatStatus g_Status;
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -107,7 +110,7 @@ void RenderWatermark() {
     } __except(EXCEPTION_EXECUTE_HANDLER) {}
 
     int sw = GetSystemMetrics(SM_CXSCREEN);
-    char name[] = "CockEngine";
+    char name[] = "CE";
     char fpsStr[16], pingStr[16];
     sprintf_s(fpsStr, "%d FPS", (int)fps);
     sprintf_s(pingStr, "%d ms", (int)ping);
@@ -207,11 +210,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 }
 
 void InitProtection() {
-    auto NtSetInformationThread = (NTSTATUS(NTAPI*)(HANDLE, ULONG, PVOID, ULONG))
-        GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtSetInformationThread");
-    if (NtSetInformationThread)
-        NtSetInformationThread(GetCurrentThread(), 0x11, nullptr, 0);
-
     HWND gameWnd = nullptr;
     while (!gameWnd) {
         gameWnd = FindWindowA("SDL_app", nullptr);
