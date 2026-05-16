@@ -1,8 +1,8 @@
 # 🚀 CockEngine
 
-> **CS2 Internal Cheat** — C++ | Manual Mapping | ImGui/D3D11 | CreateMove Hook
+> **Cheat Interne CS2** — C++ | Manual Mapping | ImGui/D3D11 | Hook CreateMove
 
-[![Status](https://img.shields.io/badge/status-working-success)](https://github.com/Code9914/CockEngine)
+[![Status](https://img.shields.io/badge/status-fonctionnel-success)](https://github.com/Code9914/CockEngine)
 [![Build](https://img.shields.io/badge/build-Release%20x64-blue)](https://github.com/Code9914/CockEngine)
 [![Menu](https://img.shields.io/badge/menu-760x620-orange)](https://github.com/Code9914/CockEngine)
 [![Injection](https://img.shields.io/badge/injection-Manual%20Mapping-red)](https://github.com/Code9914/CockEngine)
@@ -15,12 +15,12 @@
 graph TD
     A[DllMain] -->|SetUnhandledExceptionFilter| B[CrashHandler]
     A -->|Thread| C[MainThread]
-    C --> D{Find client.dll}
-    D -->|Found| E[InitRuntime]
-    E --> F[Kiero Present Hook]
-    E --> G[CreateMove Hook]
+    C --> D{Trouver client.dll}
+    D -->|Trouvé| E[InitRuntime]
+    E --> F[Hook Present Kiero]
+    E --> G[Hook CreateMove]
     G -->|Pattern| H[0xC57F70]
-    F --> I[ImGui Loop]
+    F --> I[Loop ImGui]
     I --> J[UpdateEntities]
     I --> K[RenderMenu]
     I --> L[RunTriggerbot]
@@ -28,19 +28,19 @@ graph TD
     I --> N[DrawESP]
     I --> O[DrawFOV]
     I --> P[RenderWatermark]
-    K --> Q[Aimbot / ESP / Visuals / Triggerbot]
-    I --> R[Config Save/Load]
+    K --> Q[Aimbot / ESP / Visuels / Triggerbot]
+    I --> R[Sauvegarde/Load Config]
 ```
 
 ```mermaid
 graph LR
     A[Combat] --> B[Aimbot]
     A --> C[Triggerbot]
-    D[Visuals] --> E[ESP]
+    D[Visuels] --> E[ESP]
     D --> F[NoFlash]
     D --> G[FOV]
     D --> H[NoFog]
-    I[Misc] --> J[Bhop]
+    I[Divert] --> J[Bhop]
     I --> K[Watermark]
     I --> L[Config]
 ```
@@ -49,10 +49,10 @@ graph LR
 
 ## 📍 Offsets & Patterns
 
-| Category | Name | Value / Pattern |
+| Catégorie | Nom | Valeur / Pattern |
 | :--- | :--- | :--- |
-| **Pattern** | CreateMove Sig | `48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9` |
-| **RVA** | CreateMove Fallback | `0xC57F70` |
+| **Pattern** | Sig CreateMove | `48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9` |
+| **RVA** | Fallback CreateMove | `0xC57F70` |
 | **Global** | EntityList | `0x24D4E80` |
 | **Global** | LocalPawn | `0x205A700` |
 | **Global** | ViewAngles | `0x23444F8` |
@@ -63,7 +63,7 @@ graph LR
 | **Schema** | m_iTeamNum | `0x3EB` |
 | **Schema** | m_fFlags | `0x3F8` |
 | **Schema** | m_pMovementServices | `0x1220` |
-| **Schema** | m_nButtons | `0x50` (Relative to MovementServices) |
+| **Schema** | m_nButtons | `0x50` (Relatif à MovementServices) |
 | **Global** | btn_jump | `0x2053EA0` |
 | **Global** | btn_forward | `0x2053BD0` |
 | **Global** | btn_back | `0x2053C60` |
@@ -74,176 +74,176 @@ graph LR
 
 ---
 
-## 📜 Development Log
+## 📜 Journal de Développement
 
-### Phase 1: Fix CreateMove Hook
-| Step | Action | Result |
+### Phase 1 : Correction du Hook CreateMove
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Old RVA `0x85DDB0` broken after CS2 update | Hook never called |
-| 2 | Used IDA Pro to find CreateMove via xrefs to `"cl: CreateMove"` strings | Found `sub_180C57F70` at `0x180C57F70` |
-| 3 | Generated unique byte pattern | `48 89 5C 24 ?? 55 57 41 56 ...` |
-| 4 | Updated `createmove.h` with new pattern & signature | ✅ Hook works, called every frame |
+| 1 | Ancien RVA `0x85DDB0` cassé après update CS2 | Hook jamais appelé |
+| 2 | IDA Pro pour trouver CreateMove via xrefs vers `"cl: CreateMove"` | Trouvé `sub_180C57F70` à `0x180C57F70` |
+| 3 | Génération d'un pattern bytes unique | `48 89 5C 24 ?? 55 57 41 56 ...` |
+| 4 | Mise à jour de `createmove.h` avec le nouveau pattern | ✅ Hook fonctionne, appelé chaque frame |
 
-### Phase 2: Console & Debug Cleanup
-| Step | Action | Result |
+### Phase 2 : Nettoyage Console & Debug
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Removed all `printf` debug spam from `hkCreateMove` | Clean console |
-| 2 | Removed `AllocConsole()` / `freopen()` from `main.cpp` | No console window |
-| 3 | Added `CheatStatus` struct to track hook states | Dynamic info display |
+| 1 | Suppression de tous les `printf` de `hkCreateMove` | Console propre |
+| 2 | Suppression de `AllocConsole()` / `freopen()` de `main.cpp` | Plus de fenêtre console |
+| 3 | Ajout de la struct `CheatStatus` pour suivre les hooks | Affichage dynamique des états |
 
-### Phase 3: Menu Redesign
-| Iteration | Change | Result |
+### Phase 3 : Redesign du Menu
+| Itération | Changement | Résultat |
 | :--- | :--- | :--- |
-| 1-9 | Size/rounding/color adjustments | Final: **760x620**, children **505px** |
-| 10 | Added `io.IniFilename = nullptr` | Cache disabled, size applied |
+| 1-9 | Ajustements taille/arrondis/couleurs | Final : **760x620**, enfants **505px** |
+| 10 | Ajout de `io.IniFilename = nullptr` | Cache désactivé, taille appliquée |
 
-### Phase 4: Visual Overhaul
-| Step | Action | Result |
+### Phase 4 : Refonte Visuelle
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Custom `RenderSwitch()` widget (pill style) | Modern toggles |
-| 2 | Updated color palette (darker bg, orange accent) | Premium look |
-| 3 | Increased rounding (Window: 10, Child: 8, Frame: 6) | Softer UI |
+| 1 | Widget `RenderSwitch()` custom (style pillule) | Toggles modernes |
+| 2 | Palette de couleurs mise à jour (fond sombre, accent orange) | Look premium |
+| 3 | Arrondis augmentés (Fenêtre: 10, Enfant: 8, Frame: 6) | UI plus douce |
 
-### Phase 5: Bhop Implementation
-| Step | Action | Result |
+### Phase 5 : Implémentation Bhop
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Found `m_nButtons` via IDA schema decompilation | Offset `0x50` relative to `m_pMovementServices` |
-| 2 | Tried writing via movementServices pointer | Crashed |
-| 3 | Switched to global button state at `client.dll + 0x2053EA0` | ✅ Bhop works |
-| 4 | `BTN_PRESS = 0x10001`, `BTN_RELEASE = 0x0` | Reliable |
+| 1 | Trouvé `m_nButtons` via décompilation IDA schema | Offset `0x50` relatif à `m_pMovementServices` |
+| 2 | Écriture via pointeur movementServices | Crash |
+| 3 | Passage au bouton global à `client.dll + 0x2053EA0` | ✅ Bhop fonctionne |
+| 4 | `BTN_PRESS = 0x10001`, `BTN_RELEASE = 0x0` | Fiable |
 
-### Phase 6: Manual Mapping Injector Fixes
-| Step | Action | Result |
+### Phase 6 : Corrections Injecteur Manual Mapping
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Injector crashed on import resolution | Parsed imports from `localImage` buffer instead of remote memory |
-| 2 | Relocation bounds check added | Prevents out-of-bounds reads |
-| 3 | Full debug printf cycle to isolate crash points | Identified import/relocation/schema/pattern/ImGui crash points |
-| 4 | Temporarily disabled schema resolution | Bypassed crash, cheat loads |
+| 1 | Crash injecteur sur résolution des imports | Imports parsés depuis le buffer `localImage` au lieu de la mémoire distante |
+| 2 | Vérification des limites de relocalisation ajoutée | Empêche les lectures hors limites |
+| 3 | Cycle complet de printf debug pour isoler les crashes | Points de crash identifiés : import/relocation/schema/pattern/ImGui |
+| 4 | Résolution schema temporairement désactivée | Crash évité, le cheat se charge |
 
-### Phase 7: ImGui D3D11 Rendering Fix
-| Step | Action | Result |
+### Phase 7 : Correction Rendu ImGui D3D11
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | `ImGui_ImplDX11_CreateDeviceObjects` crashed in `D3DCompile()` | Manual mapping doesn't resolve `d3dcompiler_47.dll` imports |
-| 2 | Skipped `ImGui_ImplDX11_NewFrame`, manually built font atlas | Temporary workaround, no rendering |
-| 3 | **Final fix**: `D3DCompile` loaded dynamically via `LoadLibrary("d3dcompiler_47.dll")` + `GetProcAddress` | ✅ Menu + ESP rendering works |
-| 4 | Restored `ImGui_ImplDX11_NewFrame()` and `ImGui_ImplDX11_RenderDrawData()` | Full D3D11 pipeline |
+| 1 | `ImGui_ImplDX11_CreateDeviceObjects` crash dans `D3DCompile()` | Manual mapping ne résout pas les imports `d3dcompiler_47.dll` |
+| 2 | Skip de `ImGui_ImplDX11_NewFrame`, font atlas construit manuellement | Solution temporaire, pas de rendu |
+| 3 | **Solution finale** : `D3DCompile` chargé dynamiquement via `LoadLibrary("d3dcompiler_47.dll")` + `GetProcAddress` | ✅ Menu + ESP fonctionnent |
+| 4 | Restauration de `ImGui_ImplDX11_NewFrame()` et `ImGui_ImplDX11_RenderDrawData()` | Pipeline D3D11 complet |
 
-### Phase 8: Debug Print Cleanup
-| Step | Action | Result |
+### Phase 8 : Nettoyage des Prints Debug
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Removed all `printf` from `main.cpp`, `cs2_runtime.h`, `schema_system.h`, `pattern_scan.h`, `createmove.h`, `injector/main.cpp` | Clean production build |
-| 2 | Removed console from DLL (`AllocConsole`/`freopen`) | No console window |
+| 1 | Suppression de tous les `printf` de `main.cpp`, `cs2_runtime.h`, `schema_system.h`, `pattern_scan.h`, `createmove.h`, `injector/main.cpp` | Build production propre |
+| 2 | Console retirée de la DLL (`AllocConsole`/`freopen`) | Plus de fenêtre console |
 
-### Phase 9: Feature Wiring
-| Step | Action | Result |
+### Phase 9 : Câblage des Fonctionnalités
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | `DrawESP()` never called in Present hook | Added with conditional check |
-| 2 | `ApplyVisuals()` (FOV/NoFlash/NoFog) never called | Added with conditional check |
-| 3 | `RunTriggerbot()` never called | Added with conditional check |
-| 4 | `DrawFOV()` never called | Added with `settings::aimbotShowFov` check |
-| 5 | `settings::espEnabled` was a dead toggle | Now gates `DrawESP()` call |
-| 6 | Duplicate `g_Status.*` assignments removed | Cleaner code |
+| 1 | `DrawESP()` jamais appelé dans le hook Present | Ajout avec vérification conditionnelle |
+| 2 | `ApplyVisuals()` (FOV/NoFlash/NoFog) jamais appelé | Ajout avec vérification conditionnelle |
+| 3 | `RunTriggerbot()` jamais appelé | Ajout avec vérification conditionnelle |
+| 4 | `DrawFOV()` jamais appelé | Ajout avec vérification `settings::aimbotShowFov` |
+| 5 | `settings::espEnabled` était un toggle mort | Contrôle maintenant l'appel à `DrawESP()` |
+| 6 | Assignations dupliquées `g_Status.*` supprimées | Code plus propre |
 
-### Phase 10: Aimbot Crash Fixes
-| Step | Action | Result |
+### Phase 10 : Corrections Crash Aimbot
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Aimbot crashed randomly during use | Wrapped entire aimbot block in `__try/__except` |
-| 2 | Added pointer validation (`viewAngles < 0x100000`, `players[i].pawn`, `g_EntityList`) | Prevents bad memory access |
-| 3 | Added pitch clamp [-89, 89] | Prevents invalid angle writes |
-| 4 | `GetLocalTeam()` added `g_EntityList` null check | Safer iteration |
+| 1 | Aimbot crashait aléatoirement | Bloc aimbot entier dans `__try/__except` |
+| 2 | Validation des pointeurs ajoutée (`viewAngles < 0x100000`, `players[i].pawn`, `g_EntityList`) | Empêche les accès mémoire invalides |
+| 3 | Clamp du pitch [-89, 89] ajouté | Empêche les écritures d'angles invalides |
+| 4 | `GetLocalTeam()` avec vérification null `g_EntityList` | Itération plus sûre |
 
-### Phase 11: Crash Handler
-| Step | Action | Result |
+### Phase 11 : Crash Handler
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Random crashes with no diagnostic info | Added `SetUnhandledExceptionFilter` crash handler |
-| 2 | First attempt used `dbghelp.dll` (SymInitialize, CaptureStackBackTrace) | Crashed in DllMain — `dbghelp.dll` not in manual map imports |
-| 3 | **Final**: Minimal crash handler with no external deps | Writes `crash.log` with exception type, address, registers, offsets state |
+| 1 | Crashes aléatoires sans info de diagnostic | Ajout de `SetUnhandledExceptionFilter` crash handler |
+| 2 | Première tentative avec `dbghelp.dll` (SymInitialize, CaptureStackBackTrace) | Crash dans DllMain — `dbghelp.dll` pas dans les imports manual map |
+| 3 | **Final** : Crash handler minimal sans dépendances externes | Écrit `crash.log` avec type d'exception, adresse, registres, état des offsets |
 
-### Phase 12: Project Audit
-| Finding | Severity | Fix |
+### Phase 12 : Audit du Projet
+| Constat | Sévérité | Correction |
 | :--- | :--- | :--- |
-| `RunTriggerbot()` never called | 🔴 CRITICAL | Added to Present hook |
-| `settings::espEnabled` ignored | 🟠 HIGH | Now gates `DrawESP()` |
-| Duplicate `g_Status.*` assignments | 🟡 MEDIUM | Removed |
-| `aimbotKeyWait` / `triggerbotKeyWait` dead settings | 🟢 LOW | UI-only, not used in logic |
-| Dead code files (`createmove_backup.h`, etc.) | 🟢 LOW | Not included, safe to delete |
+| `RunTriggerbot()` jamais appelé | 🔴 CRITIQUE | Ajouté au hook Present |
+| `settings::espEnabled` ignoré | 🟠 HAUTE | Contrôle maintenant `DrawESP()` |
+| Assignations dupliquées `g_Status.*` | 🟡 MOYENNE | Supprimées |
+| `aimbotKeyWait` / `triggerbotKeyWait` settings morts | 🟢 BASSE | UI uniquement, pas utilisés dans la logique |
+| Fichiers de code mort (`createmove_backup.h`, etc.) | 🟢 BASSE | Non inclus, supprimables |
 
-### Phase 13: Config Save/Load Fix
-| Step | Action | Result |
+### Phase 13 : Correction Sauvegarde/Load Config
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Config not saving | `GetModuleFileNameA(g_hModule)` returns empty with manual mapping |
-| 2 | Changed config path to `%APPDATA%\CockEngine\config.cfg` | ✅ File created and written |
-| 3 | `fovValue` was `float` but menu used `SliderInt` | Type mismatch corrupted adjacent variables |
-| 4 | All sliders converted to `int` + `SliderInt` | ✅ No more corruption |
-| 5 | `LoadConfig` variables not initialized with defaults | Added defaults matching `settings.h` |
-| 6 | All features default to `false` on first injection | User must enable features manually |
+| 1 | Config ne se sauvegarde pas | `GetModuleFileNameA(g_hModule)` retourne vide avec manual mapping |
+| 2 | Changement du chemin config vers `%APPDATA%\CockEngine\config.cfg` | ✅ Fichier créé et écrit |
+| 3 | `fovValue` était `float` mais le menu utilisait `SliderInt` | Incompatibilité de type corrompait les variables adjacentes |
+| 4 | Tous les sliders convertis en `int` + `SliderInt` | ✅ Plus de corruption |
+| 5 | Variables `LoadConfig` non initialisées avec des valeurs par défaut | Valeurs par défaut ajoutées correspondant à `settings.h` |
+| 6 | Toutes les fonctionnalités par défaut à `false` à la première injection | L'utilisateur doit activer manuellement |
 
-### Phase 14: VAC Stealth Improvements
-| Step | Action | Result |
+### Phase 14 : Améliorations Furtivité VAC
+| Étape | Action | Résultat |
 | :--- | :--- | :--- |
-| 1 | Replaced MinHook with custom inline hook (`hook.h`) | ~60% detection reduction — absolute JMP (mov rax + jmp rax) with trampoline |
-| 2 | Kiero window class `"Kiero"` → `"DXHelper"` | Removed known cheat signature |
-| 3 | `"CockEngine"` → `"CE"` obfuscated with `X()` macro | Plaintext cheat name removed from binary |
-| 4 | Config path → `%APPDATA%\Microsoft\Windows\Themes\theme.dat` | Generic path/filename |
-| 5 | `FindWindowA("SDL_app")` → `GetForegroundWindow()` | No more game window scanning |
-| 6 | Removed `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` | Anti-analysis behavior removed |
-| 7 | Triggerbot `mouse_event()` → game button state write | No synthetic input from injected module |
-| 8 | CreateMove pattern string obfuscated with `X()` | Pattern not readable in binary |
-| 9 | Crash handler → silent (no disk writes) | No forensic artifacts |
-| 10 | PDB stripping enabled (`GenerateDebugInformation=false`) | No file paths leaked in binary |
-| 11 | Removed `__DATE__` from About tab | No version correlation |
-| 12 | `io.BackendRendererName = nullptr` | ImGui signature removed |
-| 13 | `FreeLibraryAndExitThread` → `ExitThread` | Self-unload pattern removed |
+| 1 | Remplacement de MinHook par hook inline custom (`hook.h`) | ~60% réduction détection — JMP absolu (mov rax + jmp rax) avec trampoline |
+| 2 | Classe de fenêtre Kiero `"Kiero"` → `"DXHelper"` | Signature de cheat connue supprimée |
+| 3 | `"CockEngine"` → `"CE"` obfusqué avec macro `X()` | Nom du cheat en clair retiré du binaire |
+| 4 | Chemin config → `%APPDATA%\Microsoft\Windows\Themes\theme.dat` | Chemin/nom générique |
+| 5 | `FindWindowA("SDL_app")` → `GetForegroundWindow()` | Plus de scan de fenêtre de jeu |
+| 6 | Suppression de `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` | Comportement anti-analyse retiré |
+| 7 | Triggerbot `mouse_event()` → écriture état bouton jeu | Plus d'input synthétique depuis le module injecté |
+| 8 | Pattern CreateMove obfusqué avec `X()` | Pattern non lisible dans le binaire |
+| 9 | Crash handler → silencieux (pas d'écriture disque) | Pas d'artefacts forensiques |
+| 10 | Stripping PDB activé (`GenerateDebugInformation=false`) | Pas de chemins de fichiers dans le binaire |
+| 11 | Suppression de `__DATE__` de l'onglet About | Pas de corrélation de version |
+| 12 | `io.BackendRendererName = nullptr` | Signature ImGui supprimée |
+| 13 | `FreeLibraryAndExitThread` → `ExitThread` | Pattern d'auto-déchargement supprimé |
 
 ---
 
-## 🎨 UI & Design Specs
+## 🎨 Spécifications UI & Design
 
-- **Theme**: Dark background (`#0F0F14`) with **Orange Accents** (`#FF8C00`)
-- **Size**: `760x620` (Fixed, No Resize)
-- **Layout**: Two-column per tab, children at `505px` height
-- **Custom Widgets**:
-  - Toggle Switches (Pill style, 40x18px)
-  - Section Headers (Orange + Separator)
-  - Key Binders (Button + Key name)
-- **ImGui Config**: `io.IniFilename = nullptr` (no cache)
+- **Thème** : Fond sombre (`#0F0F14`) avec **Accents Orange** (`#FF8C00`)
+- **Taille** : `760x620` (Fixe, pas de redimensionnement)
+- **Layout** : Deux colonnes par onglet, enfants à `505px` de hauteur
+- **Widgets Custom** :
+  - Toggles Switches (style pillule, 40x18px)
+  - En-têtes de section (Orange + Séparateur)
+  - Key Binders (Bouton + Nom de touche)
+- **Config ImGui** : `io.IniFilename = nullptr` (pas de cache)
 
 ---
 
-## ✅ Feature Checklist
+## ✅ Liste des Fonctionnalités
 
 ### Combat
-- [x] **Aimbot** (Keybind, Smooth, FOV, Hitbox: Head/Neck/Chest)
-- [x] **Triggerbot** (Keybind, Team Check)
+- [x] **Aimbot** (Keybind, Smooth, FOV, Hitbox: Tête/Cou/Torse)
+- [x] **Triggerbot** (Keybind, Vérification d'équipe)
 
-### Visuals
-- [x] **ESP** (Box, Corner, Filled, Health, Name, Distance)
+### Visuels
+- [x] **ESP** (Box, Coins, Rempli, Santé, Nom, Distance)
 - [x] **No Flash**
 - [x] **FOV Changer** (60-120)
 - [x] **No Fog**
 
-### Misc
-- [x] **Bhop** (Space hold)
+### Divert
+- [x] **Bhop** (Maintenir espace)
 - [x] **Watermark** (FPS + Ping)
-- [x] **Config System** (Save/Load)
+- [x] **Système de Config** (Sauvegarde/Load)
 
 ---
 
 ## 📝 TODO / Roadmap
 
-- [ ] Verify stability after next CS2 update
-- [ ] Add **Skin Changer**
-- [ ] Improve Aimbot smoothing logic
-- [ ] Add more bones to Hitbox list
-- [ ] Add **Radar Hack**
-- [ ] Add **Glow ESP** option
-- [ ] Add **Spectator List**
+- [ ] Vérifier la stabilité après la prochaine update CS2
+- [ ] Ajouter le **Skin Changer**
+- [ ] Améliorer la logique de smoothing de l'aimbot
+- [ ] Ajouter plus d'os à la liste des hitbox
+- [ ] Ajouter le **Radar Hack**
+- [ ] Ajouter l'option **Glow ESP**
+- [ ] Ajouter la **Liste des Spectateurs**
 
 ---
 
-## 🔧 Build & Inject
+## 🔧 Build & Injection
 
-### Prerequisites
+### Prérequis
 - Visual Studio 2022 Build Tools (MSVC v143)
 - Windows SDK 10.0
 
@@ -253,9 +253,9 @@ graph LR
 .\build_injector.bat
 ```
 
-**Output**: `cs2_internal.dll`
+**Sortie** : `cs2_internal.dll`
 
-### Usage
+### Utilisation
 1. Compilez la DLL et l'injecteur avec les fichiers batch
 2. Lancez CS2
 3. Exécutez `injector.exe .\cs2_internal.dll`
@@ -268,64 +268,64 @@ graph LR
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure du Projet
 
 ```
 src/
-├── main.cpp              # Entry point, Present hook, DllMain, crash handler
+├── main.cpp              # Point d'entrée, hook Present, DllMain, crash handler
 ├── core/
-│   ├── includes.h        # Common headers + crypto.h (string obfuscation)
-│   ├── settings.h        # All settings consolidated
-│   ├── config.h          # Config save/load
+│   ├── includes.h        # Headers communs + crypto.h (obfuscation de strings)
+│   ├── settings.h        # Tous les settings consolidés
+│   ├── config.h          # Sauvegarde/load config
 │   ├── vector.h          # Vector3, ViewMatrix, WorldToScreen
-│   ├── entity.h          # Entity reading, bones, teams
-│   ├── game_offsets.h    # Schema offsets & global variables
-│   ├── cs2_runtime.h     # SchemaSystem init & offset resolution
-│   ├── schema_system.h   # SchemaSystem vtable interface
-│   ├── pattern_scan.h    # Signature scanning engine + RVA resolution
-│   └── hook.h            # Custom inline hook (14-byte trampoline)
+│   ├── entity.h          # Lecture entités, os, équipes
+│   ├── game_offsets.h    # Offsets schema & variables globales
+│   ├── cs2_runtime.h     # Init SchemaSystem & résolution offsets
+│   ├── schema_system.h   # Interface vtable SchemaSystem
+│   ├── pattern_scan.h    # Moteur de signature scanning + résolution RVA
+│   └── hook.h            # Hook inline custom (trampoline 14 bytes)
 ├── features/
-│   ├── aimbot.h          # Aimbot settings, DrawFOV, KeyName
-│   ├── createmove.h      # CreateMove hook + aimbot + bhop logic
-│   ├── esp.h             # ESP rendering (boxes, health, names)
-│   ├── triggerbot.h      # Triggerbot logic
+│   ├── aimbot.h          # Settings aimbot, DrawFOV, KeyName
+│   ├── createmove.h      # Hook CreateMove + logique aimbot + bhop
+│   ├── esp.h             # Rendu ESP (boîtes, santé, noms)
+│   ├── triggerbot.h      # Logique triggerbot
 │   ├── visuals.h         # NoFlash, FOV Changer, NoFog
-│   └── menu.h            # UI rendering, ApplyStyle, KeyBinder
+│   └── menu.h            # Rendu UI, ApplyStyle, KeyBinder
 └── libs/
     ├── imgui/            # Dear ImGui (v1.90)
     └── kiero/            # Kiero D3D hook + MinHook
 injector/
-└── main.cpp              # Manual mapping injector (x64)
+└── main.cpp              # Injecteur manual mapping (x64)
 ```
 
 ---
 
-## 🔬 Technical Notes
+## 🔬 Notes Techniques
 
-> **Manual Mapping**: Injector maps DLL from local `localImage` buffer, resolves imports via `LoadLibrary`/`GetProcAddress`, applies relocations, calls DllMain via x64 shellcode.
+> **Manual Mapping** : L'injecteur mappe la DLL depuis un buffer local `localImage`, résout les imports via `LoadLibrary`/`GetProcAddress`, applique les relocalisations, appelle DllMain via shellcode x64.
 
-> **D3DCompile**: Loaded dynamically via `LoadLibrary("d3dcompiler_47.dll")` to avoid import resolution failure with manual mapping.
+> **D3DCompile** : Chargé dynamiquement via `LoadLibrary("d3dcompiler_47.dll")` pour éviter l'échec de résolution d'imports avec le manual mapping.
 
-> **Crash Handler**: `SetUnhandledExceptionFilter` with minimal SEH handler — no external dependencies. Writes `crash.log` next to DLL with exception type, address, registers, and offset state.
+> **Crash Handler** : `SetUnhandledExceptionFilter` avec handler SEH minimal — aucune dépendance externe. Écrit `crash.log` à côté de la DLL avec type d'exception, adresse, registres et état des offsets.
 
-> **Bhop**: Writes to global button state at `client.dll + 0x2053EA0`. `BTN_PRESS = 0x10001`, `BTN_RELEASE = 0x0`.
+> **Bhop** : Écriture sur l'état du bouton global à `client.dll + 0x2053EA0`. `BTN_PRESS = 0x10001`, `BTN_RELEASE = 0x0`.
 
-> **Pattern Scanner**: Supports RIP-relative resolution, RVA-based scanning for data pointers and instructions.
+> **Pattern Scanner** : Supporte la résolution RIP-relative, scanning basé RVA pour les pointeurs de données et instructions.
 
-> **All debug prints removed** from production build.
+> **Tous les prints debug supprimés** du build de production.
 
-> `io.IniFilename = nullptr` prevents ImGui window size caching.
+> `io.IniFilename = nullptr` empêche le cache de taille de fenêtre ImGui.
 
 ---
 
-## ⚠️ Known Issues
+## ⚠️ Problèmes Connus
 
-- Monitor after next CS2 update for pattern breakage
-- Global button offsets may change with animgraph2 update (beta branch)
-- Schema offset resolution (`ResolveSchemaOffset`) is currently disabled — offsets use hardcoded defaults from `game_offsets.h`
-- `aimbotKeyWait` and `triggerbotKeyWait` settings exist but are not implemented in logic (UI only)
+- Surveiller après la prochaine update CS2 pour les ruptures de pattern
+- Les offsets de boutons globaux peuvent changer avec l'update animgraph2 (branche beta)
+- La résolution d'offsets schema (`ResolveSchemaOffset`) est actuellement désactivée — les offsets utilisent les valeurs par défaut hardcodées de `game_offsets.h`
+- Les settings `aimbotKeyWait` et `triggerbotKeyWait` existent mais ne sont pas implémentés dans la logique (UI uniquement)
 
 ---
 
 > [!WARNING]
-> This project is for **educational purposes only**. Use at your own risk. The authors are not responsible for any bans or consequences.
+> Ce projet est à des fins **éducatives uniquement**. Utilisez à vos propres risques. Les auteurs ne sont pas responsables de bans ou conséquences.
