@@ -53,17 +53,24 @@ graph LR
 | :--- | :--- | :--- |
 | **Pattern** | Sig CreateMove | `48 89 5C 24 ?? 55 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 8B 01 48 8B F9` |
 | **RVA** | Fallback CreateMove | `0xC57F70` |
+| **Pattern** | Sig SetViewAngle | `85 D2 75 3D 48 63 81 ?? ?? ?? ??` (CCSGOInput::SetViewAngle) |
 | **Global** | EntityList | `0x24D4E80` |
 | **Global** | LocalPawn | `0x205A700` |
+| **Global** | CCSGOInput | `0x2067410` |
 | **Global** | ViewAngles | `0x23444F8` |
 | **Global** | ViewMatrix | `0x2334850` |
 | **Schema** | m_pGameSceneNode | `0x330` |
+| **Schema** | m_iHealth | `0x34C` |
+| **Schema** | m_iTeamNum (Entity) | `0x3EB` |
+| **Schema** | m_iTeamNum (Controller) | `0x840` |
+| **Schema** | m_fFlags | `0x3F8` |
 | **Schema** | m_hPlayerPawn | `0x90C` |
 | **Schema** | m_vecAbsOrigin | `0xC8` |
-| **Schema** | m_iTeamNum | `0x3EB` |
-| **Schema** | m_fFlags | `0x3F8` |
+| **Schema** | m_vecViewOffset | `0xCC` (Relatif à C_BaseEntity) |
 | **Schema** | m_pMovementServices | `0x1220` |
 | **Schema** | m_nButtons | `0x50` (Relatif à MovementServices) |
+| **Schema** | m_sSanitizedPlayerName | `0x860` (CUtlString) |
+| **Schema** | m_iszPlayerName | `0x6F4` (char[128]) |
 | **Global** | btn_jump | `0x2053EA0` |
 | **Global** | btn_forward | `0x2053BD0` |
 | **Global** | btn_back | `0x2053C60` |
@@ -195,16 +202,20 @@ graph LR
 | 12 | `io.BackendRendererName = nullptr` | Signature ImGui supprimée |
 | 13 | `FreeLibraryAndExitThread` → `ExitThread` | Pattern d'auto-déchargement supprimé |
 
-### Phase 15 : Silent Aimbot (CCSGOInput)
+### Phase 15 : Silent + Normal Aimbot via CCSGOInput
 | Étape | Action | Résultat |
 | :--- | :--- | :--- |
 | 1 | Tentative d'écriture dans `CUserCmd` (`a2+0x60`, `a2+0x64`) | Aucun effet sur la caméra |
 | 2 | Analyse IDA Pro de `CreateMove` (`sub_180C57F70`) | Découverte que `a2` n'est pas le `CUserCmd` final |
 | 3 | Analyse du wrapper `sub_180C3C500` | `a1` = `CCSGOInput*`, `a2` = structure intermédiaire |
 | 4 | Debug printf pour scanner offsets `0x50-0x80` | Identification des deltas souris/angles |
-| 5 | **Silent Aimbot implémenté** | Écriture dans `a1+0x10` (Pitch) et `a1+0x14` (Yaw) **avant** `oCreateMove` |
+| 5 | **Silent Aimbot** : écriture dans `a1+0x10` (Pitch) et `a1+0x14` (Yaw) **avant** `oCreateMove` | Silent Aim fonctionnel, invisible spectateurs |
 | 6 | Ajout setting `aimbotSilent` dans `settings.h` | Toggle Silent Aim ON/OFF |
-| 7 | Fallback vers `ViewAngles` si Silent désactivé | Compatibilité avec l'ancien système |
+| 7 | Migration normal aimbot : `ViewAngles` → `CCSGOInput::SetViewAngle` | Plus furtif, utilise `g_SetViewAngle` |
+| 8 | Ajout `RVA_CSGOINPUT = 0x2067410` + pattern `85 D2 75 3D...` | SetViewAngle scanné au runtime |
+| 9 | Ajout `m_iTeamNumCtrl = 0x840` (named offset) | Plus de hardcode `0x840` |
+| 10 | Optimisation boneIndices hors boucle + bounds check | Hitbox safe |
+| 11 | `ForceJump()` : `__try/__except` + validation adresse | Bhop sécurisé |
 
 ### Phase 16 : Durcissement Sécurité Mémoire
 | Étape | Action | Résultat |

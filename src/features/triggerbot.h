@@ -21,7 +21,7 @@ inline void RunTriggerbot() {
         uintptr_t targetCtrl = GetEntity(g_EntityList, pawnHandle);
         if (!targetCtrl || targetCtrl < 0x100000) return;
 
-        int targetTeam = *(uint8_t*)(targetCtrl + 0x840);
+        int targetTeam = *(uint8_t*)(targetCtrl + g_Offsets.m_iTeamNumCtrl);
         int localTeam = GetLocalTeam();
         if (!localTeam || !targetTeam) return;
         if (settings::triggerbotTeamCheck && targetTeam == localTeam) return;

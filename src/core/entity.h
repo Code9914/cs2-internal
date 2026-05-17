@@ -44,7 +44,7 @@ inline int GetLocalTeam() {
             if (!ph) continue;
             uintptr_t pawn = GetEntity(g_EntityList, ph);
             if (pawn && pawn == lp)
-                return *(uint8_t*)(ctrl + 0x840);
+                return *(uint8_t*)(ctrl + g_Offsets.m_iTeamNumCtrl);
         }
     } __except(EXCEPTION_EXECUTE_HANDLER) {}
     return 0;
@@ -93,7 +93,7 @@ inline void UpdateEntities() {
             int health = *(int*)(pawn + g_Offsets.m_iHealth);
             if (health <= 0 || health > 100) continue;
 
-            int team = *(uint8_t*)(controller + 0x840);
+            int team = *(uint8_t*)(controller + g_Offsets.m_iTeamNumCtrl);
             if (team != 2 && team != 3) continue;
 
             uintptr_t sceneNode = *(uintptr_t*)(pawn + g_Offsets.m_pGameSceneNode);

@@ -6,6 +6,7 @@
 // Updated: 2026-05-15
 #define RVA_ENTITYLIST     0x24D4E80
 #define RVA_LOCALPAWN      0x205A700
+#define RVA_CSGOINPUT      0x2067410
 #define RVA_VIEWANGLES     0x23444F8
 #define RVA_VIEWMATRIX     0x2334850
 
@@ -27,7 +28,8 @@ struct GameOffsets {
     // Schema offsets (resolved by SchemaSystem at runtime)
     int32_t m_pGameSceneNode        = 0x330;
     int32_t m_iHealth               = 0x34C;
-    int32_t m_iTeamNum              = 0x3EB;
+    int32_t m_iTeamNum              = 0x3EB;  // C_BaseEntity team
+    int32_t m_iTeamNumCtrl          = 0x840;  // CBasePlayerController team
     int32_t m_hPlayerPawn           = 0x90C;
     int32_t m_sSanitizedPlayerName  = 0x860;
     int32_t m_iszPlayerName         = 0x6F4; // char[128] in CBasePlayerController

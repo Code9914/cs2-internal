@@ -1,5 +1,6 @@
 #pragma once
 #include "../core/includes.h"
+#include "../core/cs2_runtime.h"
 #include "../core/config.h"
 #include "aimbot.h"
 
@@ -382,6 +383,7 @@ inline void RenderMenu(bool& menuOpen) {
             ImGui::Text("EntityList   0x%llX", g_Status.entityList);
             ImGui::Text("ViewAngles   0x%llX", g_Status.viewAngles);
             ImGui::Text("ViewMatrix   0x%llX", g_Status.viewMatrix);
+            ImGui::Text("SetViewAngle 0x%llX", (uintptr_t)g_SetViewAngle);
             ImGui::EndChild();
 
             ImGui::Dummy(ImVec2(0, 4));
