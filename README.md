@@ -206,15 +206,7 @@ graph LR
 | 6 | Ajout setting `aimbotSilent` dans `settings.h` | Toggle Silent Aim ON/OFF |
 | 7 | Fallback vers `ViewAngles` si Silent désactivé | Compatibilité avec l'ancien système |
 
-### Phase 16 : Migration CUserCmd Test
-| Étape | Action | Résultat |
-| :--- | :--- | :--- |
-| 1 | Copie du projet vers `D:\Projets\C++ CUserCmd Test` | Environnement de test isolé |
-| 2 | Tentatives multiples d'écriture `CUserCmd` | Échecs (offsets incorrects dans cette version CS2) |
-| 3 | Console activée pour debug | Printf des 5 premiers appels CreateMove |
-| 4 | Scan offsets `0x50-0x80` dans `a1` et `a2` | En cours d'analyse |
-
-### Phase 17 : Durcissement Sécurité Mémoire
+### Phase 16 : Durcissement Sécurité Mémoire
 | Étape | Action | Résultat |
 | :--- | :--- | :--- |
 | 1 | Audit de tous les accès mémoire (lecture/écriture) | Identification des points de crash potentiels |
