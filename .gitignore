@@ -7,6 +7,7 @@ output/
 *.cfg
 *.ilk
 *.tlog/
+src/CockEngine/
 
 # Binaries / tools (not part of source)
 cs2-dumper.exe
@@ -21,3 +22,8 @@ main_temp.txt
 # IDE
 *.suo
 *.user
+
+# Backup files (dead code)
+src/features/createmove_backup.h
+src/features/createmove_cusercmd.h
+src/features/createmove_global_backup.h

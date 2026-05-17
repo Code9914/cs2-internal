@@ -20,6 +20,7 @@ namespace settings {
 
     // --- Aimbot ---
     inline bool   aimbotEnabled      = false;
+    inline bool   aimbotSilent       = false;
     inline int    aimbotKey          = VK_LBUTTON;
     inline bool   aimbotKeyWait      = false;
     inline int    aimbotHitbox       = 0;

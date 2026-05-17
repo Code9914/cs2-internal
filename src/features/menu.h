@@ -157,6 +157,7 @@ inline void RenderMenu(bool& menuOpen) {
             SectionHeader("Aimbot");
 
             RenderSwitch("Enable", &settings::aimbotEnabled);
+            RenderSwitch("Silent", &settings::aimbotSilent);
             RenderSwitch("Team check", &settings::aimbotTeamCheck);
 
             ImGui::Text("Hitbox");

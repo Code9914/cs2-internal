@@ -22,7 +22,7 @@ inline void SaveConfig() {
         settings::healthColor[0], settings::healthColor[1], settings::healthColor[2], settings::healthColor[3],
         settings::nameColor[0], settings::nameColor[1], settings::nameColor[2], settings::nameColor[3],
         settings::distColor[0], settings::distColor[1], settings::distColor[2], settings::distColor[3],
-        settings::aimbotEnabled, settings::aimbotTeamCheck, settings::aimbotShowFov,
+        settings::aimbotEnabled, settings::aimbotSilent, settings::aimbotTeamCheck, settings::aimbotShowFov,
         settings::triggerbotEnabled, settings::triggerbotTeamCheck,
         settings::aimbotFov, settings::aimbotSmooth, settings::aimbotSmoothEnabled,
         settings::aimbotKey, settings::triggerbotKey, settings::aimbotHitbox, settings::fovValue,
@@ -40,7 +40,7 @@ inline void LoadConfig() {
     int bt = 2;
     float bcol[4] = {1, 0.55f, 0, 1}, bfill[4] = {0, 0, 0, 0.3f};
     float hcol[4] = {0, 1, 0, 1}, ncol[4] = {1, 1, 1, 1}, dcol[4] = {1, 1, 1, 1};
-    int ae = 0, tc = 1, sf = 0, te = 0, ttk = 1;
+    int ae = 0, as = 0, tc = 1, sf = 0, te = 0, ttk = 1;
     int fov = 8, sm = 6;
     int se = 0, ak = VK_LBUTTON, ttk2 = VK_MENU, ah = 0;
     int fv = 90;
@@ -56,7 +56,7 @@ inline void LoadConfig() {
         &hcol[0], &hcol[1], &hcol[2], &hcol[3],
         &ncol[0], &ncol[1], &ncol[2], &ncol[3],
         &dcol[0], &dcol[1], &dcol[2], &dcol[3],
-        &ae, &tc, &sf, &te, &ttk,
+        &ae, &as, &tc, &sf, &te, &ttk,
         &fov, &sm, &se, &ak, &ttk2, &ah, &fv,
         &nf, &fc, &nfg, &bh, &akw, &tkw);
     fclose(f);
@@ -72,7 +72,7 @@ inline void LoadConfig() {
     memcpy(settings::healthColor, hcol, sizeof(hcol));
     memcpy(settings::nameColor, ncol, sizeof(ncol));
     memcpy(settings::distColor, dcol, sizeof(dcol));
-    settings::aimbotEnabled = ae != 0; settings::aimbotTeamCheck = tc != 0;
+    settings::aimbotEnabled = ae != 0; settings::aimbotSilent = as != 0; settings::aimbotTeamCheck = tc != 0;
     settings::aimbotShowFov = sf != 0;
     settings::triggerbotEnabled = te != 0; settings::triggerbotTeamCheck = ttk != 0;
     settings::aimbotFov = fov; settings::aimbotSmooth = sm; settings::aimbotSmoothEnabled = se != 0;
