@@ -27,3 +27,5 @@ main_temp.txt
 src/features/createmove_backup.h
 src/features/createmove_cusercmd.h
 src/features/createmove_global_backup.h
+
+Dumper/
