@@ -237,6 +237,7 @@ graph LR
 
 ### Combat
 - [x] **Aimbot** (Keybind, Smooth, FOV, Hitbox: Tête/Cou/Torse)
+- [x] **Silent Aimbot** (Écriture CCSGOInput avant CreateMove, invisible spectateurs)
 - [x] **Triggerbot** (Keybind, Vérification d'équipe)
 
 ### Visuels
