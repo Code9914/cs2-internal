@@ -195,6 +195,37 @@ graph LR
 | 12 | `io.BackendRendererName = nullptr` | Signature ImGui supprimée |
 | 13 | `FreeLibraryAndExitThread` → `ExitThread` | Pattern d'auto-déchargement supprimé |
 
+### Phase 15 : Silent Aimbot (CCSGOInput)
+| Étape | Action | Résultat |
+| :--- | :--- | :--- |
+| 1 | Tentative d'écriture dans `CUserCmd` (`a2+0x60`, `a2+0x64`) | Aucun effet sur la caméra |
+| 2 | Analyse IDA Pro de `CreateMove` (`sub_180C57F70`) | Découverte que `a2` n'est pas le `CUserCmd` final |
+| 3 | Analyse du wrapper `sub_180C3C500` | `a1` = `CCSGOInput*`, `a2` = structure intermédiaire |
+| 4 | Debug printf pour scanner offsets `0x50-0x80` | Identification des deltas souris/angles |
+| 5 | **Silent Aimbot implémenté** | Écriture dans `a1+0x10` (Pitch) et `a1+0x14` (Yaw) **avant** `oCreateMove` |
+| 6 | Ajout setting `aimbotSilent` dans `settings.h` | Toggle Silent Aim ON/OFF |
+| 7 | Fallback vers `ViewAngles` si Silent désactivé | Compatibilité avec l'ancien système |
+
+### Phase 16 : Migration CUserCmd Test
+| Étape | Action | Résultat |
+| :--- | :--- | :--- |
+| 1 | Copie du projet vers `D:\Projets\C++ CUserCmd Test` | Environnement de test isolé |
+| 2 | Tentatives multiples d'écriture `CUserCmd` | Échecs (offsets incorrects dans cette version CS2) |
+| 3 | Console activée pour debug | Printf des 5 premiers appels CreateMove |
+| 4 | Scan offsets `0x50-0x80` dans `a1` et `a2` | En cours d'analyse |
+
+### Phase 17 : Durcissement Sécurité Mémoire
+| Étape | Action | Résultat |
+| :--- | :--- | :--- |
+| 1 | Audit de tous les accès mémoire (lecture/écriture) | Identification des points de crash potentiels |
+| 2 | `entity.h` : validation `g_EntityList > 0x100000`, `controller/pawn > 0x100000` | Plus de crash sur entités invalides |
+| 3 | `entity.h` : `players[i].name[0] = '\0'` au lieu de cast unsafe | Copy safe des noms |
+| 4 | `triggerbot.h` : `__try/__except` global + validation `atkAddr` | Triggerbot ne crash plus |
+| 5 | `visuals.h` : `__try/__except` global | NoFlash/FOV/NoFog sécurisés |
+| 6 | `esp.h` : validation `viewMatrix > 0x100000`, `__try/__except` sur `DrawESP()` | ESP stable |
+| 7 | `createmove.h` : validation `a1 > 0x100000` avant lecture/écriture Silent Aim | Fallback vers `oCreateMove` en cas d'exception |
+| 8 | Synchronisation des 2 projets + push GitHub | Commit `6a681f8` sur `Code9914/CockEngine` |
+
 ---
 
 ## 🎨 Spécifications UI & Design
