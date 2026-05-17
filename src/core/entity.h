@@ -72,18 +72,20 @@ inline void UpdateEntities() {
         g_EntityList = g_Offsets.gameEntitySystem + 0x10;
     }
 
+    if (!g_EntityList || g_EntityList < 0x100000) return;
+
     uintptr_t localPawn = GetLocalPawn();
 
     for (int i = 1; i <= 64; i++) {
         __try {
             uintptr_t controller = GetEntity(g_EntityList, i);
-            if (!controller) continue;
+            if (!controller || controller < 0x100000) continue;
 
             uint32_t pawnHandle = *(uint32_t*)(controller + g_Offsets.m_hPlayerPawn);
             if (!pawnHandle) continue;
 
             uintptr_t pawn = GetEntity(g_EntityList, pawnHandle);
-            if (!pawn) continue;
+            if (!pawn || pawn < 0x100000) continue;
 
             if (localPawn > 0x100000 && pawn == localPawn)
                 continue;
@@ -106,19 +108,27 @@ inline void UpdateEntities() {
             players[i].headPos = headPos;
             players[i].health = health;
             players[i].team = team;
-            *(uintptr_t*)players[i].name = 0;
+            players[i].name[0] = '\0';
 
             // Try m_sSanitizedPlayerName (CUtlString, pointer at offset 0)
             uintptr_t nameAddr = controller + g_Offsets.m_sSanitizedPlayerName;
-            const char* namePtr = *(const char**)(nameAddr);
-            if (namePtr && (uintptr_t)namePtr > 0x100000)
-                strcpy_s(players[i].name, namePtr);
+            if (nameAddr > 0x100000) {
+                const char* namePtr = *(const char**)(nameAddr);
+                if (namePtr && (uintptr_t)namePtr > 0x100000) {
+                    __try {
+                        strcpy_s(players[i].name, namePtr);
+                    } __except(EXCEPTION_EXECUTE_HANDLER) {}
+                }
+            }
 
             // Fallback: m_iszPlayerName (char[128] inline)
             if (!players[i].name[0]) {
                 const char* inlineName = (const char*)(controller + g_Offsets.m_iszPlayerName);
-                if (inlineName && inlineName[0])
-                    strcpy_s(players[i].name, inlineName);
+                if (inlineName && (uintptr_t)inlineName > 0x100000 && inlineName[0]) {
+                    __try {
+                        strcpy_s(players[i].name, inlineName);
+                    } __except(EXCEPTION_EXECUTE_HANDLER) {}
+                }
             }
 
             players[i].valid = true;

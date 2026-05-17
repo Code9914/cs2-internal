@@ -3,29 +3,35 @@
 #include "../core/entity.h"
 
 inline void RunTriggerbot() {
-    if (!settings::triggerbotEnabled) return;
+    __try {
+        if (!settings::triggerbotEnabled) return;
 
-    uintptr_t localPawn = GetLocalPawn();
-    if (!localPawn || localPawn < 0x100000) return;
+        uintptr_t localPawn = GetLocalPawn();
+        if (!localPawn || localPawn < 0x100000) return;
 
-    int idEntIndex = *(int*)(localPawn + 0x344C);
-    if (idEntIndex <= 0 || idEntIndex >= 64) return;
+        int idEntIndex = *(int*)(localPawn + 0x344C);
+        if (idEntIndex <= 0 || idEntIndex >= 64) return;
 
-    uintptr_t targetPawn = GetEntity(g_EntityList, idEntIndex);
-    if (!targetPawn || targetPawn < 0x100000) return;
+        uintptr_t targetPawn = GetEntity(g_EntityList, idEntIndex);
+        if (!targetPawn || targetPawn < 0x100000) return;
 
-    uintptr_t targetCtrl = GetEntity(g_EntityList, *(uint32_t*)(targetPawn + g_Offsets.m_hPlayerPawn));
-    if (!targetCtrl || targetCtrl < 0x100000) return;
+        uint32_t pawnHandle = *(uint32_t*)(targetPawn + g_Offsets.m_hPlayerPawn);
+        if (!pawnHandle) return;
 
-    int targetTeam = *(uint8_t*)(targetCtrl + 0x840);
-    int localTeam = GetLocalTeam();
-    if (!localTeam || !targetTeam) return;
-    if (settings::triggerbotTeamCheck && targetTeam == localTeam) return;
+        uintptr_t targetCtrl = GetEntity(g_EntityList, pawnHandle);
+        if (!targetCtrl || targetCtrl < 0x100000) return;
 
-    if (settings::triggerbotKey == 0 || (GetAsyncKeyState(settings::triggerbotKey) & 0x8000)) {
-        HMODULE hClient = GetModuleHandleA(X("client.dll"));
-        if (!hClient) return;
-        uintptr_t atkAddr = (uintptr_t)hClient + 0x2053900;
-        *(uint32_t*)atkAddr = 0x10001;
-    }
+        int targetTeam = *(uint8_t*)(targetCtrl + 0x840);
+        int localTeam = GetLocalTeam();
+        if (!localTeam || !targetTeam) return;
+        if (settings::triggerbotTeamCheck && targetTeam == localTeam) return;
+
+        if (settings::triggerbotKey == 0 || (GetAsyncKeyState(settings::triggerbotKey) & 0x8000)) {
+            HMODULE hClient = GetModuleHandleA(X("client.dll"));
+            if (!hClient) return;
+            uintptr_t atkAddr = (uintptr_t)hClient + 0x2053900;
+            if (atkAddr > 0x100000)
+                *(uint32_t*)atkAddr = 0x10001;
+        }
+    } __except(EXCEPTION_EXECUTE_HANDLER) {}
 }
